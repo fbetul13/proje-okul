@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetülBooking | Lüks Hizmet & Rezervasyon Sistemi</title>
+    <meta name="description" content="Lüks otel stili hizmetlerimizden yararlanmak için kolayca rezervasyon yapın.">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Style -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    
+    <nav>
+        <div class="container">
+            <a href="#home" class="logo">BETUL<span>BOOKING</span></a>
+            <ul class="nav-links" id="nav-links">
+                <!-- Dinamik Linkler -->
+            </ul>
+            <div id="auth-buttons">
+                <!-- Dinamik Butonlar -->
+            </div>
+        </div>
+    </nav>
+
+    <main id="app-root">
+        <div class="container" style="padding-top: 5rem; text-align: center;">
+            <p>Hizmetlerimiz Yükleniyor...</p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container site-footer-inner">
+            <div class="site-footer-brand">
+                <a href="#home" class="site-footer-logo">BETUL<span>BOOKING</span></a>
+                <p class="site-footer-tagline">İşletmeleri keşfet, randevunu veya konaklamanı tek yerden yönet.</p>
+            </div>
+            <div class="site-footer-col">
+                <h3 class="site-footer-heading">Keşfet</h3>
+                <ul class="site-footer-links">
+                    <li><a href="#home">Ana Sayfa</a></li>
+                    <li><a href="#businesses">Tüm İşletmeler</a></li>
+                    <li><a href="#businesses?type=konaklama">Konaklama</a></li>
+                    <li><a href="#businesses?type=guzellik">Güzellik &amp; Bakım</a></li>
+                </ul>
+            </div>
+            <div class="site-footer-col">
+                <h3 class="site-footer-heading">İş ortakları</h3>
+                <ul class="site-footer-links">
+                    <li><a href="#how-it-works">Nasıl Çalışır?</a></li>
+                    <li><a href="#partner-contact" class="site-footer-highlight">İşletmeni Ekle</a></li>
+                </ul>
+            </div>
+            <div class="site-footer-col">
+                <h3 class="site-footer-heading">Yardım</h3>
+                <ul class="site-footer-links">
+                    <li><a href="#login">Giriş</a></li>
+                    <li><a href="#register">Kayıt Ol</a></li>
+                    <li><a href="#forgot-password">Şifremi Unuttum</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="site-footer-bottom">
+            <div class="container site-footer-bottom-inner">
+                <p>&copy; 2026 BetülBooking. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal System -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div id="modal-content" class="modal-content">
+            <!-- Dinamik İçerik -->
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
