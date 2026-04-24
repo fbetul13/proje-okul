@@ -21,15 +21,27 @@
             <ul class="nav-links" id="nav-links">
                 <!-- Dinamik Linkler -->
             </ul>
-            <div id="auth-buttons">
-                <!-- Dinamik Butonlar -->
+            <div class="nav-right">
+                <div class="lang-switcher" id="lang-switcher" title="Change language / Dili değiştir">
+                    <button type="button" class="lang-btn" data-lang="tr" aria-label="Türkçe">
+                        <span class="lang-flag">🇹🇷</span>
+                        <span class="lang-code">TR</span>
+                    </button>
+                    <button type="button" class="lang-btn" data-lang="en" aria-label="English">
+                        <span class="lang-flag">🇬🇧</span>
+                        <span class="lang-code">EN</span>
+                    </button>
+                </div>
+                <div id="auth-buttons">
+                    <!-- Dinamik Butonlar -->
+                </div>
             </div>
         </div>
     </nav>
 
     <main id="app-root">
         <div class="container" style="padding-top: 5rem; text-align: center;">
-            <p>Hizmetlerimiz Yükleniyor...</p>
+            <p data-i18n="common.loading">Yükleniyor...</p>
         </div>
     </main>
 
@@ -37,36 +49,36 @@
         <div class="container site-footer-inner">
             <div class="site-footer-brand">
                 <a href="#home" class="site-footer-logo">BETUL<span>BOOKING</span></a>
-                <p class="site-footer-tagline">İşletmeleri keşfet, randevunu veya konaklamanı tek yerden yönet.</p>
+                <p class="site-footer-tagline" data-i18n="footer.tagline">İşletmeleri keşfet, randevunu veya konaklamanı tek yerden yönet.</p>
             </div>
             <div class="site-footer-col">
-                <h3 class="site-footer-heading">Keşfet</h3>
+                <h3 class="site-footer-heading" data-i18n="footer.discover">Keşfet</h3>
                 <ul class="site-footer-links">
-                    <li><a href="#home">Ana Sayfa</a></li>
-                    <li><a href="#businesses">Tüm İşletmeler</a></li>
-                    <li><a href="#businesses?type=konaklama">Konaklama</a></li>
-                    <li><a href="#businesses?type=guzellik">Güzellik &amp; Bakım</a></li>
+                    <li><a href="#home" data-i18n="nav.home">Ana Sayfa</a></li>
+                    <li><a href="#businesses" data-i18n="footer.all_businesses">Tüm İşletmeler</a></li>
+                    <li><a href="#businesses?type=konaklama" data-i18n="nav.biz_cat.accommodation">Konaklama</a></li>
+                    <li><a href="#businesses?type=guzellik" data-i18n="nav.biz_cat.beauty">Güzellik &amp; Bakım</a></li>
                 </ul>
             </div>
             <div class="site-footer-col">
-                <h3 class="site-footer-heading">İş ortakları</h3>
+                <h3 class="site-footer-heading" data-i18n="footer.partners">İş ortakları</h3>
                 <ul class="site-footer-links">
-                    <li><a href="#how-it-works">Nasıl Çalışır?</a></li>
-                    <li><a href="#partner-contact" class="site-footer-highlight">İşletmeni Ekle</a></li>
+                    <li><a href="#how-it-works" data-i18n="nav.how_it_works">Nasıl Çalışır?</a></li>
+                    <li><a href="#partner-contact" class="site-footer-highlight" data-i18n="footer.add_business">İşletmeni Ekle</a></li>
                 </ul>
             </div>
             <div class="site-footer-col">
-                <h3 class="site-footer-heading">Yardım</h3>
+                <h3 class="site-footer-heading" data-i18n="footer.help">Yardım</h3>
                 <ul class="site-footer-links">
-                    <li><a href="#login">Giriş</a></li>
-                    <li><a href="#register">Kayıt Ol</a></li>
-                    <li><a href="#forgot-password">Şifremi Unuttum</a></li>
+                    <li><a href="#login" data-i18n="nav.login">Giriş</a></li>
+                    <li><a href="#register" data-i18n="nav.register">Kayıt Ol</a></li>
+                    <li><a href="#forgot-password" data-i18n="auth.forgot_password">Şifremi Unuttum</a></li>
                 </ul>
             </div>
         </div>
         <div class="site-footer-bottom">
             <div class="container site-footer-bottom-inner">
-                <p>&copy; 2026 BetülBooking. Tüm hakları saklıdır.</p>
+                <p>&copy; 2026 BetülBooking. <span data-i18n="footer.copyright">Tüm hakları saklıdır.</span></p>
             </div>
         </div>
     </footer>
@@ -83,6 +95,7 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/js/i18n.js"></script>
     <script src="/static/js/api.js"></script>
     <script src="/static/js/app.js"></script>
 </body>

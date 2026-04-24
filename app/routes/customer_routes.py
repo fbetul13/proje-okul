@@ -424,14 +424,22 @@ def get_service_reviews(service_id):
 
 @customer_bp.route('/search', methods=['GET'])
 def general_search():
+    """
+    SRS §5.2.b uyumlu arama — AND, OR, NOT mantıksal operatörlerini destekler.
+    - `q`:       OR-temelli aranacak terim (name OR description OR il OR ilce)
+    - `exclude`: NOT operatörü — bu terimi içeren kayıtları hariç tutar (case-insensitive)
+                 Virgülle birden fazla exclude terimi verilebilir: "spa,pahalı"
+    - `il`, `ilce`, `min_price`, `max_price`: AND operatörü (hepsi birlikte aranır)
+    """
     from app.models.business import Business
     from app.models.service import Service
     from app.models.review import Review
-    from sqlalchemy import func
+    from sqlalchemy import func, not_
 
     q = request.args.get('q', '').strip()
     il = request.args.get('il', '').strip()
     ilce = request.args.get('ilce', '').strip()
+    exclude_raw = request.args.get('exclude', '').strip()
     min_price = request.args.get('min_price', None, type=float)
     max_price = request.args.get('max_price', None, type=float)
 
@@ -440,6 +448,10 @@ def general_search():
 
     search_term = f'%{q}%'
 
+    # NOT (exclude) terimlerini parse et — virgülle ayrılmış, case-insensitive
+    exclude_terms = [t.strip() for t in exclude_raw.split(',') if t.strip()] if exclude_raw else []
+
+    # --- İşletme araması ---
     biz_query = Business.query.filter(
         db.or_(
             Business.name.ilike(search_term),
@@ -452,8 +464,21 @@ def general_search():
         biz_query = biz_query.filter(Business.il == il)
     if ilce:
         biz_query = biz_query.filter(Business.ilce == ilce)
+
+    # NOT: her exclude terimi için name/description/il/ilce'de geçmemesi şartı
+    for term in exclude_terms:
+        excl_pattern = f'%{term}%'
+        biz_query = biz_query.filter(
+            db.and_(
+                not_(Business.name.ilike(excl_pattern)),
+                not_(Business.description.ilike(excl_pattern)),
+                not_(Business.il.ilike(excl_pattern)),
+                not_(Business.ilce.ilike(excl_pattern))
+            )
+        )
+
     businesses = biz_query.limit(10).all()
-    
+
     biz_results = []
     for b in businesses:
         biz_dict = b.to_dict()
@@ -463,6 +488,7 @@ def general_search():
         biz_dict['avg_rating'] = round(float(avg_rating), 1) if avg_rating else None
         biz_results.append(biz_dict)
 
+    # --- Hizmet araması ---
     svc_query = Service.query.filter(
         db.or_(
             Service.name.ilike(search_term),
@@ -479,7 +505,18 @@ def general_search():
         svc_query = svc_query.filter(Service.price >= min_price)
     if max_price is not None:
         svc_query = svc_query.filter(Service.price <= max_price)
-        
+
+    # NOT: exclude terimlerini hizmet arama sonuçlarından da çıkar
+    for term in exclude_terms:
+        excl_pattern = f'%{term}%'
+        svc_query = svc_query.filter(
+            db.and_(
+                not_(Service.name.ilike(excl_pattern)),
+                not_(Service.description.ilike(excl_pattern)),
+                not_(Service.room_type.ilike(excl_pattern))
+            )
+        )
+
     services = svc_query.limit(10).all()
 
     return jsonify({

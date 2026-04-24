@@ -1,20 +1,24 @@
 /* BETULBOOKING Application Logic */
 
-const BUSINESS_TYPES = {
-    'konaklama': 'Konaklama',
-    'yeme-icme': 'Yeme & İçme',
-    'guzellik': 'Güzellik & Bakım',
-    'saglik': 'Sağlık & Wellness',
-    'spor': 'Spor & Aktivite',
-    'etkinlik': 'Etkinlik & Organizasyon',
-    'hizmet': 'Hizmet & Servis',
-    'egitim': 'Eğitim',
-    'hotel': 'Konaklama',
-    'salon': 'Güzellik & Bakım',
-    'spa': 'Sağlık & Wellness'
+/**
+ * İşletme kategorisi çevirileri. Anahtar i18n'e bağlı (dil değişince otomatik günceller).
+ * `konaklama`, `yeme-icme`, `guzellik` vb. backend'deki `business.type` değerleridir.
+ */
+const getBusinessTypeLabel = (type) => {
+    if (!type) return t('biz.category.other');
+    // Legacy alias'ları normalize et
+    const legacy = { hotel: 'konaklama', salon: 'guzellik', spa: 'saglik' };
+    const key = legacy[type] || type;
+    const translated = t('biz.category.' + key);
+    // Eğer key bulunamazsa t() anahtarı döner; o zaman raw değeri göster
+    if (translated === 'biz.category.' + key) return type;
+    return translated;
 };
 
-const getBusinessTypeLabel = (type) => BUSINESS_TYPES[type] || type || 'Diğer';
+// Geriye dönük uyumluluk (bazı yerler hâlâ BUSINESS_TYPES[...] kullanıyor)
+const BUSINESS_TYPES = new Proxy({}, {
+    get: (_, key) => getBusinessTypeLabel(key)
+});
 
 /** İşletme listesi filtre sırası (navbar / seed ile aynı kategoriler) */
 const BUSINESS_CATEGORY_ORDER = [
@@ -30,30 +34,37 @@ function normalizeBusinessTypeParam(raw) {
 /** Ana sayfa hash (logo / Ana Sayfa); eski #hotels hâlâ router’da desteklenir */
 const HOME_HASH = '#home';
 
+/**
+ * LOCALE — eski kod i18n dönüşümünden önce bu isimle Türkçe sabitler kullanıyordu.
+ * Artık dinamik olarak i18n.js'deki t() fonksiyonuna bağlıdır; dil değişince
+ * (sayfa reload'la) tüm render eden kod otomatik olarak yeni dilde alır.
+ *
+ * Not: Getter'lar her erişimde t() çağırır, böylece runtime'da doğru çeviri döner.
+ */
 const LOCALE = {
     NAV: {
-        HOME: "Ana Sayfa",
-        RESERVATIONS: "Rezervasyonlarım",
-        SUPERADMIN: "Platform Yönetimi",
-        BUSINESS: "İşletme Paneli",
-        STAFF: "Personel Paneli",
-        LOGS: "Sistem Günlükleri",
-        LOGOUT: "Çıkış Yap",
-        LOGIN: "Giriş Yap",
-        REGISTER: "Kayıt Ol"
+        get HOME() { return t('nav.home'); },
+        get RESERVATIONS() { return t('nav.reservations'); },
+        get SUPERADMIN() { return t('nav.admin_panel'); },
+        get BUSINESS() { return t('nav.business_panel'); },
+        get STAFF() { return t('nav.staff_panel'); },
+        get LOGS() { return t('sa.menu.logs'); },
+        get LOGOUT() { return t('nav.logout'); },
+        get LOGIN() { return t('nav.login'); },
+        get REGISTER() { return t('nav.register'); }
     },
     STATUS: {
-        pending: "Beklemede",
-        approved: "Onaylandı",
-        rejected: "Reddedildi"
+        get pending() { return t('status.pending'); },
+        get approved() { return t('status.approved'); },
+        get rejected() { return t('status.rejected'); }
     },
     MESSAGES: {
-        LOGIN_SUCCESS: "Giriş başarılı! Hoş geldiniz.",
-        REGISTER_SUCCESS: "Kayıt başarılı! Şimdi giriş yapabilirsiniz.",
-        BOOKING_SUCCESS: "Rezervasyonunuz başarıyla oluşturuldu.",
-        BOOKING_ERROR: "Rezervasyon sırasında bir hata oluştu.",
-        CANCEL_SUCCESS: "Rezervasyon iptal edildi.",
-        UNAUTHORIZED: "Lütfen önce giriş yapın."
+        get LOGIN_SUCCESS() { return t('msg.login_success'); },
+        get REGISTER_SUCCESS() { return t('msg.register_success'); },
+        get BOOKING_SUCCESS() { return t('msg.booking_success'); },
+        get BOOKING_ERROR() { return t('msg.booking_error'); },
+        get CANCEL_SUCCESS() { return t('msg.cancel_success'); },
+        get UNAUTHORIZED() { return t('msg.unauthorized'); }
     }
 };
 
@@ -119,52 +130,52 @@ function renderNavbar() {
 
     const businessDropdown = `
         <li class="nav-dropdown">
-            <button class="nav-dropdown-btn">İşletmeler</button>
+            <button class="nav-dropdown-btn">${t('nav.businesses')}</button>
             <div class="nav-dropdown-menu">
-                <a href="#businesses?type=konaklama">Konaklama</a>
-                <a href="#businesses?type=yeme-icme">Yeme & İçme</a>
-                <a href="#businesses?type=guzellik">Güzellik & Bakım</a>
-                <a href="#businesses?type=saglik">Sağlık & Wellness</a>
-                <a href="#businesses?type=spor">Spor & Aktivite</a>
-                <a href="#businesses?type=etkinlik">Etkinlik & Organizasyon</a>
-                <a href="#businesses?type=hizmet">Hizmet & Servis</a>
-                <a href="#businesses?type=egitim">Eğitim</a>
-                <a href="#businesses">Tümü</a>
+                <a href="#businesses?type=konaklama">${t('nav.biz_cat.accommodation')}</a>
+                <a href="#businesses?type=yeme-icme">${t('nav.biz_cat.food')}</a>
+                <a href="#businesses?type=guzellik">${t('nav.biz_cat.beauty')}</a>
+                <a href="#businesses?type=saglik">${t('nav.biz_cat.health')}</a>
+                <a href="#businesses?type=spor">${t('nav.biz_cat.sport')}</a>
+                <a href="#businesses?type=etkinlik">${t('nav.biz_cat.event')}</a>
+                <a href="#businesses?type=hizmet">${t('nav.biz_cat.service')}</a>
+                <a href="#businesses?type=egitim">${t('nav.biz_cat.education')}</a>
+                <a href="#businesses">${t('nav.businesses_all')}</a>
             </div>
         </li>
     `;
 
     if (token) {
         navLinks.innerHTML = `
-            <li><a href="${HOME_HASH}">Ana Sayfa</a></li>
+            <li><a href="${HOME_HASH}">${t('nav.home')}</a></li>
             ${businessDropdown}
-            ${user.role === 'customer' ? `<li><a href="#reservations">${LOCALE.NAV.RESERVATIONS}</a></li>` : ''}
-            ${user.role === 'staff' ? `<li><a href="#staff-dashboard">${LOCALE.NAV.STAFF}</a></li>` : ''}
-            ${user.role === 'business_owner' ? `<li><a href="#business-dashboard">${LOCALE.NAV.BUSINESS}</a></li>` : ''}
-            ${user.role === 'superadmin' ? `<li><a href="#superadmin-stats">${LOCALE.NAV.SUPERADMIN}</a></li>` : ''}
+            ${user.role === 'customer' ? `<li><a href="#reservations">${t('nav.reservations')}</a></li>` : ''}
+            ${user.role === 'staff' ? `<li><a href="#staff-dashboard">${t('nav.staff_panel')}</a></li>` : ''}
+            ${user.role === 'business_owner' ? `<li><a href="#business-dashboard">${t('nav.business_panel')}</a></li>` : ''}
+            ${user.role === 'superadmin' ? `<li><a href="#superadmin-stats">${t('nav.admin_panel')}</a></li>` : ''}
         `;
-        const displayName = escapeHtmlNavText(user.name || 'Hesap');
+        const displayName = escapeHtmlNavText(user.name || t('nav.my_account'));
         const initials = escapeHtmlNavText(navUserInitials(user.name));
         authButtons.innerHTML = `
             <div class="nav-auth-wrap">
-                <a href="#profile" class="nav-user-chip" title="Profil, iletişim ve şifre ayarları" aria-label="Profil ve hesap ayarlarına git">
+                <a href="#profile" class="nav-user-chip" title="${t('nav.account_title')}" aria-label="${t('nav.account_title')}">
                     <span class="nav-user-avatar" aria-hidden="true">${initials}</span>
                     <span class="nav-user-text">
-                        <span class="nav-user-label">Hesabım</span>
+                        <span class="nav-user-label">${t('nav.my_account')}</span>
                         <span class="nav-user-name">${displayName}</span>
                     </span>
                 </a>
-                <button type="button" class="btn btn-outline btn-sm nav-logout-btn" onclick="logout()">Çıkış</button>
+                <button type="button" class="btn btn-outline btn-sm nav-logout-btn" onclick="logout()">${t('nav.logout')}</button>
             </div>
         `;
     } else {
         navLinks.innerHTML = `
-            <li><a href="${HOME_HASH}">Ana Sayfa</a></li>
+            <li><a href="${HOME_HASH}">${t('nav.home')}</a></li>
             ${businessDropdown}
         `;
         authButtons.innerHTML = `
-            <a href="#login" class="btn btn-sm">Giriş</a>
-            <a href="#register" class="btn btn-primary btn-sm">Kayıt</a>
+            <a href="#login" class="btn btn-sm">${t('nav.login')}</a>
+            <a href="#register" class="btn btn-primary btn-sm">${t('nav.register')}</a>
         `;
     }
 }
@@ -257,7 +268,7 @@ window.applyLocationFilter = async () => {
 function renderBusinessCards(businesses) {
     const grid = document.getElementById('businesses-grid');
     if (!businesses.length) {
-        grid.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 3rem;">Bu kriterlere uygun işletme bulunamadı.</p>';
+        grid.innerHTML = `<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 3rem;">${t('biz.no_businesses')}</p>`;
         return;
     }
     grid.innerHTML = businesses.map(b => `
@@ -270,7 +281,7 @@ function renderBusinessCards(businesses) {
                 <h3 style="font-size: 1.3rem;">${b.name}</h3>
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">${b.il || ''}${b.ilce ? ', ' + b.ilce : ''}</p>
                 <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${b.description || ''}</p>
-                <a href="#business-detail?id=${b.id}" class="btn btn-primary" style="width: 100%;">Hizmetleri Gör</a>
+                <a href="#business-detail?id=${b.id}" class="btn btn-primary" style="width: 100%;">${t('biz.view_services')}</a>
             </div>
         </div>
     `).join('');
@@ -288,14 +299,14 @@ async function viewHotels(container) {
         container.innerHTML = `
             <section class="hero-section">
                 <div class="container">
-                    <h1 style="color: white; font-size: 3rem; margin-bottom: 0.5rem;">İstediğiniz Zaman, İstediğiniz Yerde</h1>
+                    <h1 style="color: white; font-size: 3rem; margin-bottom: 0.5rem;">${t('home.hero_title')}</h1>
                     <p style="color: #ddd; font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem;">
-                        Otellerden profesyonel hizmetlere, aradığınız her şey burada.
+                        ${t('home.hero_subtitle')}
                     </p>
                     <div style="max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
                         <div style="position: relative; margin-bottom: 1rem;">
                             <input type="text" id="global-search"
-                                placeholder="Ne aramıştınız? Otel, kuaför, masaj..."
+                                placeholder="${t('home.search_placeholder')}"
                                 style="width: 100%; padding: 1rem 1.2rem; font-size: 1rem; border: 2px solid #e2e8f0; border-radius: 10px; outline: none; transition: border-color 0.2s;"
                                 onfocus="this.style.borderColor='var(--accent)'; this.parentElement.querySelector('#search-results').style.display = this.value.length >= 2 ? 'block' : 'none'"
                                 onblur="this.style.borderColor='#e2e8f0'"
@@ -305,34 +316,34 @@ async function viewHotels(container) {
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 0.75rem; align-items: end;">
                             <div>
-                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">İl</label>
+                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">${t('home.filter_city')}</label>
                                 <select id="filter-il" class="pretty-select" onchange="window.updateIlceSelect()">
-                                    <option value="">Tümü</option>
+                                    <option value="">${t('home.filter_all')}</option>
                                     ${ilOptions}
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">İlçe</label>
+                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">${t('home.filter_district')}</label>
                                 <select id="filter-ilce" class="pretty-select">
-                                    <option value="">Tümü</option>
+                                    <option value="">${t('home.filter_all')}</option>
                                 </select>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">Fiyat Aralığı</label>
+                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">${t('home.filter_price')}</label>
                                 <div style="display: flex; gap: 0.5rem;">
-                                    <input type="number" id="filter-min-price" placeholder="Min" style="width: 50%; padding: 0.75rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 0.9rem;">
-                                    <input type="number" id="filter-max-price" placeholder="Max" style="width: 50%; padding: 0.75rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 0.9rem;">
+                                    <input type="number" id="filter-min-price" placeholder="${t('home.filter_min')}" style="width: 50%; padding: 0.75rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 0.9rem;">
+                                    <input type="number" id="filter-max-price" placeholder="${t('home.filter_max')}" style="width: 50%; padding: 0.75rem 0.5rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; font-size: 0.9rem;">
                                 </div>
                             </div>
                             <div>
-                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">Puan</label>
+                                <label style="display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem; font-weight: 500;">${t('home.filter_rating')}</label>
                                 <select id="filter-rating" class="pretty-select">
-                                    <option value="">Tümü</option>
-                                    <option value="4">4+ Yıldız</option>
-                                    <option value="3">3+ Yıldız</option>
+                                    <option value="">${t('home.filter_all')}</option>
+                                    <option value="4">${t('home.filter_rating_4plus')}</option>
+                                    <option value="3">${t('home.filter_rating_3plus')}</option>
                                 </select>
                             </div>
-                            <button class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 600;" onclick="window.filterBusinesses()">Ara</button>
+                            <button class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 600;" onclick="window.filterBusinesses()">${t('btn.search')}</button>
                         </div>
                     </div>
                 </div>
@@ -340,7 +351,7 @@ async function viewHotels(container) {
 
             <div class="container" style="padding-top: 4rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                    <h2 id="results-title">Popüler İşletmeler</h2>
+                    <h2 id="results-title">${t('home.popular_businesses')}</h2>
                 </div>
                 <div class="services-grid" id="businesses-grid">
                     ${renderBusinessCardsHTML(businessData.businesses)}
@@ -352,17 +363,17 @@ async function viewHotels(container) {
                     <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.55);"></div>
                     <div style="position: relative; padding: 3.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
                         <div>
-                            <p style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Mayıs - Haziran 2026</p>
-                            <h3 style="color: white; font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700;">Erken Yaz Fırsatları</h3>
-                            <p style="color: rgba(255,255,255,0.85); font-size: 1.1rem;">Seçili konaklamalarda %20'ye varan indirimler</p>
+                            <p style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">${t('home.offer_period')}</p>
+                            <h3 style="color: white; font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700;">${t('home.offer_title')}</h3>
+                            <p style="color: rgba(255,255,255,0.85); font-size: 1.1rem;">${t('home.offer_subtitle')}</p>
                         </div>
-                        <a href="#businesses?type=konaklama" class="btn" style="background: white; color: #1e293b; padding: 1rem 2rem; font-weight: 600;">Fırsatları Gör</a>
+                        <a href="#businesses?type=konaklama" class="btn" style="background: white; color: #1e293b; padding: 1rem 2rem; font-weight: 600;">${t('home.offer_cta')}</a>
                     </div>
                 </div>
             </div>
 
             <div class="container" style="padding-bottom: 4rem;">
-                <h2 style="margin-bottom: 1.5rem;">Kategoriler</h2>
+                <h2 style="margin-bottom: 1.5rem;">${t('home.categories_title')}</h2>
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
                     <a href="#businesses?type=konaklama" style="text-decoration: none;">
                         <div style="background: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
@@ -560,8 +571,11 @@ async function viewHotels(container) {
 
 function renderBusinessCardsHTML(businesses) {
     if (!businesses.length) {
-        return '<p style="color: #999; text-align: center; grid-column: 1/-1; padding: 3rem;">Henüz işletme bulunmuyor.</p>';
+        return `<p style="color: #999; text-align: center; grid-column: 1/-1; padding: 3rem;">${t('biz.no_businesses')}</p>`;
     }
+    // Para birimi ve locale dile göre değişsin
+    const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+    const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
     return businesses.map(b => `
         <div class="service-card item-card business-card">
             <img src="${b.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=600'}" class="service-img">
@@ -575,8 +589,8 @@ function renderBusinessCardsHTML(businesses) {
                 <h3 style="font-size: 1.3rem;">${b.name}</h3>
                 <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">${b.il || ''}${b.ilce ? ', ' + b.ilce : ''}</p>
                 <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${b.description || ''}</p>
-                ${b.min_price ? `<p style="color: var(--accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;">${b.min_price.toLocaleString('tr-TR')} ₺'den başlayan fiyatlar</p>` : '<div style="margin-bottom: 1rem;"></div>'}
-                <a href="#business-detail?id=${b.id}" class="btn btn-primary" style="width: 100%;">Hizmetleri Gör</a>
+                ${b.min_price ? `<p style="color: var(--accent); font-weight: 600; font-size: 0.9rem; margin-bottom: 1rem;">${t('biz.price_from', { price: b.min_price.toLocaleString(numberLocale) })}</p>` : '<div style="margin-bottom: 1rem;"></div>'}
+                <a href="#business-detail?id=${b.id}" class="btn btn-primary" style="width: 100%;">${t('biz.view_services')}</a>
             </div>
         </div>
     `).join('');
@@ -586,9 +600,9 @@ async function viewBusinessesByType(container) {
     const params = new URLSearchParams(window.location.hash.split('?')[1]);
     const type = normalizeBusinessTypeParam(params.get('type'));
 
-    const title = type ? getBusinessTypeLabel(type) : 'Tüm İşletmeler';
+    const title = type ? getBusinessTypeLabel(type) : t('biz.all_businesses');
     const filterButtons = [
-        `<a href="#businesses" class="btn ${!type ? 'btn-primary' : 'btn-outline'} btn-sm">Tümü</a>`,
+        `<a href="#businesses" class="btn ${!type ? 'btn-primary' : 'btn-outline'} btn-sm">${t('nav.businesses_all')}</a>`,
         ...BUSINESS_CATEGORY_ORDER.map((slug) => {
             const label = getBusinessTypeLabel(slug);
             const active = type === slug;
@@ -599,7 +613,7 @@ async function viewBusinessesByType(container) {
     container.innerHTML = `
         <div class="container" style="padding-top: 4rem;">
             <div style="margin-bottom: 2rem;">
-                <a href="${HOME_HASH}" style="color: var(--accent); font-weight: 500;">← Ana Sayfa</a>
+                <a href="${HOME_HASH}" style="color: var(--accent); font-weight: 500;">${t('home.back_to_home')}</a>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                 <h1 style="margin: 0;">${title}</h1>
@@ -608,7 +622,7 @@ async function viewBusinessesByType(container) {
                 </div>
             </div>
             <div class="services-grid" id="businesses-grid">
-                <p style="text-align: center; padding: 2rem; color: #666; grid-column: 1/-1;">Yükleniyor...</p>
+                <p style="text-align: center; padding: 2rem; color: #666; grid-column: 1/-1;">${t('common.loading_generic')}</p>
             </div>
         </div>
     `;
@@ -632,12 +646,12 @@ async function viewHotelDetail(container) {
         const hotels = await API.customer.getHotels();
         const hotel = hotels.businesses.find(b => b.id == hotelId);
 
-        if (!hotel) return container.innerHTML = 'Otel bulunamadı.';
+        if (!hotel) return container.innerHTML = t('biz.hotel_not_found');
 
         container.innerHTML = `
             <div class="container" style="padding-top: 4rem;">
                 <div style="margin-bottom: 3rem;">
-                    <a href="${HOME_HASH}" style="color: var(--accent); font-weight: 600;">← Ana Sayfaya Dön</a>
+                    <a href="${HOME_HASH}" style="color: var(--accent); font-weight: 600;">${t('home.back_to_home_full')}</a>
                     <h1 style="font-size: 3rem; margin-top: 1rem;">${hotel.name}</h1>
                     <p style="color: var(--text-muted); font-size: 1.1rem;">${hotel.description}</p>
                 </div>
@@ -645,16 +659,16 @@ async function viewHotelDetail(container) {
                 <div class="card" style="padding: 2.5rem; background: white; border-radius: 20px; box-shadow: var(--shadow);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1.5rem;">
                         <div>
-                            <h3 style="margin-bottom: 0.5rem;">Oda Seçimi & Müsaitlik</h3>
-                            <p style="font-size: 0.9rem; color: var(--text-muted);">Tarih seçin veya bir odanın takvimini görüntüleyin.</p>
+                            <h3 style="margin-bottom: 0.5rem;">${t('biz.room_selection')}</h3>
+                            <p style="font-size: 0.9rem; color: var(--text-muted);">${t('biz.room_selection_hint')}</p>
                         </div>
                         <div style="display: flex; gap: 1rem;">
                             <div class="form-group" style="margin: 0;">
-                                <label style="font-size: 0.8rem;">Giriş</label>
+                                <label style="font-size: 0.8rem;">${t('res.check_in')}</label>
                                 <input type="date" id="grid-check-in" class="btn-outline" style="padding: 0.5rem;" min="${today}" onchange="refreshRoomGrid(${hotelId})">
                             </div>
                             <div class="form-group" style="margin: 0;">
-                                <label style="font-size: 0.8rem;">Çıkış</label>
+                                <label style="font-size: 0.8rem;">${t('res.check_out')}</label>
                                 <input type="date" id="grid-check-out" class="btn-outline" style="padding: 0.5rem;" min="${today}" onchange="refreshRoomGrid(${hotelId})">
                             </div>
                         </div>
@@ -662,7 +676,7 @@ async function viewHotelDetail(container) {
 
                     <div id="room-grid-container" class="room-grid">
                         <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #999;">
-                            Yükleniyor...
+                            ${t('common.loading_generic')}
                         </div>
                     </div>
                 </div>
@@ -676,29 +690,32 @@ async function viewHotelDetail(container) {
             try {
                 const rooms = await API.customer.getHotelRooms(hotelId);
                 if (!rooms.rooms.length) {
-                    grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:3rem; color:#999;">Bu otelde oda bulunamadı.</p>';
+                    grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:3rem; color:#999;">${t('biz.no_rooms')}</p>`;
                     return;
                 }
+
+                const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+                const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
 
                 grid.innerHTML = rooms.rooms.map(room => `
                     <div class="room-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; transition: all 0.2s;">
                         <div style="height: 140px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white;">
                             <div style="text-align: center;">
-                                <div style="font-size: 2rem; font-weight: 700;">Oda ${room.room_number || ''}</div>
-                                <div style="font-size: 0.85rem; opacity: 0.9;">${room.room_type || 'Standart'}</div>
+                                <div style="font-size: 2rem; font-weight: 700;">${t('biz.room_num')} ${room.room_number || ''}</div>
+                                <div style="font-size: 0.85rem; opacity: 0.9;">${room.room_type || t('biz.room_standart')}</div>
                             </div>
                         </div>
                         <div style="padding: 1.2rem;">
                             <h4 style="margin-bottom: 0.5rem; font-size: 1.1rem;">${room.name}</h4>
-                            <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1rem;">${room.description || 'Konforlu ve ferah oda'}</p>
+                            <p style="color: #6b7280; font-size: 0.85rem; margin-bottom: 1rem;">${room.description || t('biz.room_comfortable_desc')}</p>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                ${room.price ? `<span style="font-size: 1.2rem; font-weight: 700; color: var(--accent);">${room.price.toLocaleString('tr-TR')} ₺<small style="font-size: 0.7rem; font-weight: 400; color: #999;">/gece</small></span>` : '<span></span>'}
-                                <button class="btn btn-primary btn-sm" onclick="window.showRoomCalendar(${room.id}, '${room.name.replace(/'/g,"\\'")}', '${room.room_type || 'Standart'}', ${room.price || 0})">Müsaitlik</button>
+                                ${room.price ? `<span style="font-size: 1.2rem; font-weight: 700; color: var(--accent);">${room.price.toLocaleString(numberLocale)} ₺<small style="font-size: 0.7rem; font-weight: 400; color: #999;">${t('res.per_night')}</small></span>` : '<span></span>'}
+                                <button class="btn btn-primary btn-sm" onclick="window.showRoomCalendar(${room.id}, '${room.name.replace(/'/g,"\\'")}', '${room.room_type || t('biz.room_standart')}', ${room.price || 0})">${t('biz.availability')}</button>
                             </div>
                         </div>
                     </div>
                 `).join('');
-            } catch (e) { grid.innerHTML = 'Hata: ' + e.message; }
+            } catch (e) { grid.innerHTML = t('common.error') + ': ' + e.message; }
         }
 
         window.showRoomCalendar = async (roomId, roomName, roomType, price) => {
@@ -2312,14 +2329,17 @@ async function viewLogin(container) {
     container.innerHTML = `
         <div style="max-width: 450px; margin: 8rem auto;" class="service-card">
             <div style="padding: 3rem;">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Giriş Yap</h2>
+                <h2 style="text-align: center; margin-bottom: 2rem;">${t('auth.login_title')}</h2>
                 <form id="login-form">
-                    <div class="form-group"><label>E-posta Adresi</label><input type="email" id="login-email" required></div>
-                    <div class="form-group"><label>Şifre</label><input type="password" id="login-password" required></div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Oturum Aç</button>
+                    <div class="form-group"><label>${t('auth.email')}</label><input type="email" id="login-email" required></div>
+                    <div class="form-group"><label>${t('auth.password')}</label><input type="password" id="login-password" required></div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">${t('auth.sign_in')}</button>
                 </form>
                 <p style="text-align: center; margin-top: 1.5rem;">
-                    <a href="#forgot-password" style="color: var(--accent);">Şifremi Unuttum</a>
+                    <a href="#forgot-password" style="color: var(--accent);">${t('auth.forgot_password')}</a>
+                </p>
+                <p style="text-align: center; margin-top: 0.75rem; color: var(--text-muted); font-size: 0.9rem;">
+                    ${t('auth.no_account')} <a href="#register" style="color: var(--accent); font-weight: 600;">${t('nav.register')}</a>
                 </p>
             </div>
         </div>
@@ -2344,14 +2364,14 @@ async function viewForgotPassword(container) {
     container.innerHTML = `
         <div style="max-width: 450px; margin: 8rem auto;" class="service-card">
             <div style="padding: 3rem;">
-                <h2 style="text-align: center; margin-bottom: 1rem;">Şifremi Unuttum</h2>
-                <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">E-posta adresinizi girin, şifre sıfırlama bağlantısı göndereceğiz.</p>
+                <h2 style="text-align: center; margin-bottom: 1rem;">${t('auth.forgot_title')}</h2>
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">${t('auth.forgot_subtitle')}</p>
                 <form id="forgot-form">
-                    <div class="form-group"><label>E-posta Adresi</label><input type="email" id="forgot-email" required></div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Gönder</button>
+                    <div class="form-group"><label>${t('auth.email')}</label><input type="email" id="forgot-email" required></div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">${t('auth.send_reset_link')}</button>
                 </form>
                 <p style="text-align: center; margin-top: 1.5rem;">
-                    <a href="#login" style="color: var(--accent);">Giriş sayfasına dön</a>
+                    <a href="#login" style="color: var(--accent);">${t('auth.back_to_login')}</a>
                 </p>
             </div>
         </div>
@@ -2360,15 +2380,15 @@ async function viewForgotPassword(container) {
         e.preventDefault();
         const btn = e.target.querySelector('button');
         btn.disabled = true;
-        btn.textContent = 'Gönderiliyor...';
+        btn.textContent = t('btn.loading');
         try {
             await API.auth.forgotPassword(document.getElementById('forgot-email').value);
-            showToast('Şifre sıfırlama bağlantısı e-posta adresinize gönderildi');
+            showToast(t('auth.check_email'));
             setTimeout(() => window.location.hash = '#login', 2000);
         } catch (err) { 
             showToast(err.message, 'error'); 
             btn.disabled = false;
-            btn.textContent = 'Gönder';
+            btn.textContent = t('auth.send_reset_link');
         }
     };
 }
@@ -2381,9 +2401,9 @@ async function viewResetPassword(container) {
         container.innerHTML = `
             <div style="max-width: 450px; margin: 8rem auto; text-align: center;" class="service-card">
                 <div style="padding: 3rem;">
-                    <h2 style="color: var(--error);">Geçersiz Bağlantı</h2>
-                    <p style="margin-top: 1rem;">Şifre sıfırlama bağlantısı geçersiz veya süresi dolmuş.</p>
-                    <a href="#forgot-password" class="btn btn-primary" style="margin-top: 2rem;">Yeniden Talep Et</a>
+                    <h2 style="color: var(--error);">${t('auth.invalid_link')}</h2>
+                    <p style="margin-top: 1rem;">${t('auth.invalid_link_desc')}</p>
+                    <a href="#forgot-password" class="btn btn-primary" style="margin-top: 2rem;">${t('auth.request_again')}</a>
                 </div>
             </div>
         `;
@@ -2393,11 +2413,11 @@ async function viewResetPassword(container) {
     container.innerHTML = `
         <div style="max-width: 450px; margin: 8rem auto;" class="service-card">
             <div style="padding: 3rem;">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Yeni Şifre Belirle</h2>
+                <h2 style="text-align: center; margin-bottom: 2rem;">${t('auth.reset_title')}</h2>
                 <form id="reset-form">
-                    <div class="form-group"><label>Yeni Şifre</label><input type="password" id="reset-password" required minlength="6"></div>
-                    <div class="form-group"><label>Şifre Tekrar</label><input type="password" id="reset-password-confirm" required minlength="6"></div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Şifreyi Güncelle</button>
+                    <div class="form-group"><label>${t('auth.new_password')}</label><input type="password" id="reset-password" required minlength="6"></div>
+                    <div class="form-group"><label>${t('auth.password_confirm')}</label><input type="password" id="reset-password-confirm" required minlength="6"></div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">${t('auth.reset_btn')}</button>
                 </form>
             </div>
         </div>
@@ -2442,48 +2462,48 @@ async function viewProfile(container) {
         
         container.innerHTML = `
             <div class="container" style="padding-top: 4rem; max-width: 600px;">
-                <h1 style="margin-bottom: 2rem;">Profil Ayarları</h1>
+                <h1 style="margin-bottom: 2rem;">${t('profile.title')}</h1>
                 
                 <div class="service-card" style="padding: 2rem; margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem;">Kişisel Bilgiler</h3>
+                    <h3 style="margin-bottom: 1.5rem;">${t('profile.info')}</h3>
                     <form id="profile-form">
                         <div class="form-group">
-                            <label>Ad Soyad</label>
+                            <label>${t('auth.name')}</label>
                             <input type="text" id="profile-name" value="${user.name || ''}" required>
                         </div>
                         <div class="form-group">
-                            <label>E-posta</label>
+                            <label>${t('auth.email')}</label>
                             <input type="email" value="${user.email}" disabled style="background: #f5f5f5;">
                         </div>
                         <div class="form-group">
-                            <label>Telefon</label>
+                            <label>${t('auth.phone_mobile')}</label>
                             <div class="phone-input-row">
                                 <span class="phone-input-prefix" aria-hidden="true">+90</span>
                                 <input type="tel" id="profile-phone" class="phone-input-field" inputmode="numeric" autocomplete="tel-national"
                                     value="${phoneDisplay}" placeholder="5XX XXX XX XX">
                             </div>
-                            <p class="field-hint">Kayıtta 0 olmadan da girebilirsiniz; kaydederken 05XX… olarak saklanır.</p>
+                            <p class="field-hint">${t('profile.phone_hint')}</p>
                         </div>
-                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                        <button type="submit" class="btn btn-primary">${t('btn.save')}</button>
                     </form>
                 </div>
                 
                 <div class="service-card" style="padding: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem;">Şifre Değiştir</h3>
+                    <h3 style="margin-bottom: 1.5rem;">${t('profile.change_password')}</h3>
                     <form id="password-form">
                         <div class="form-group">
-                            <label>Mevcut Şifre</label>
+                            <label>${t('profile.current_password')}</label>
                             <input type="password" id="current-password" required>
                         </div>
                         <div class="form-group">
-                            <label>Yeni Şifre</label>
+                            <label>${t('profile.new_password')}</label>
                             <input type="password" id="new-password" required minlength="6">
                         </div>
                         <div class="form-group">
-                            <label>Yeni Şifre Tekrar</label>
+                            <label>${t('auth.password_confirm')}</label>
                             <input type="password" id="new-password-confirm" required minlength="6">
                         </div>
-                        <button type="submit" class="btn btn-outline">Şifreyi Değiştir</button>
+                        <button type="submit" class="btn btn-outline">${t('profile.change_password')}</button>
                     </form>
                 </div>
             </div>
@@ -2509,7 +2529,7 @@ async function viewProfile(container) {
                     phone: phonePayload
                 });
                 localStorage.setItem('user', JSON.stringify(res.user));
-                showToast('Profil güncellendi');
+                showToast(t('profile.info_updated'));
                 renderNavbar();
             } catch (err) { showToast(err.message, 'error'); }
             btn.disabled = false;
@@ -2521,7 +2541,7 @@ async function viewProfile(container) {
             const confirmPass = document.getElementById('new-password-confirm').value;
             
             if (newPass !== confirmPass) {
-                showToast('Yeni şifreler eşleşmiyor', 'error');
+                showToast(t('auth.password_mismatch'), 'error');
                 return;
             }
             
@@ -2532,14 +2552,14 @@ async function viewProfile(container) {
                     document.getElementById('current-password').value,
                     newPass
                 );
-                showToast('Şifreniz değiştirildi');
+                showToast(t('profile.password_changed'));
                 e.target.reset();
             } catch (err) { showToast(err.message, 'error'); }
             btn.disabled = false;
         };
         
     } catch (err) {
-        container.innerHTML = `<div class="container" style="padding: 5rem;">Hata: ${err.message}</div>`;
+        container.innerHTML = `<div class="container" style="padding: 5rem;">${t('common.error')}: ${err.message}</div>`;
     }
 }
 
@@ -2547,21 +2567,24 @@ async function viewRegister(container) {
     container.innerHTML = `
         <div style="max-width: 450px; margin: 8rem auto;" class="service-card">
             <div style="padding: 3rem;">
-                <h2 style="text-align: center; margin-bottom: 2rem;">Kayıt Ol</h2>
+                <h2 style="text-align: center; margin-bottom: 2rem;">${t('auth.register_title')}</h2>
                 <form id="register-form">
-                    <div class="form-group"><label>Ad Soyad</label><input type="text" id="reg-name" required></div>
-                    <div class="form-group"><label>E-posta</label><input type="email" id="reg-email" required></div>
+                    <div class="form-group"><label>${t('auth.name')}</label><input type="text" id="reg-name" required></div>
+                    <div class="form-group"><label>${t('auth.email')}</label><input type="email" id="reg-email" required></div>
                     <div class="form-group">
-                        <label>Cep telefonu</label>
+                        <label>${t('auth.phone_mobile')}</label>
                         <div class="phone-input-row">
                             <span class="phone-input-prefix" aria-hidden="true">+90</span>
                             <input type="tel" id="reg-phone" class="phone-input-field" inputmode="numeric" autocomplete="tel-national" required placeholder="5XX XXX XX XX">
                         </div>
                     </div>
-                    <div class="form-group"><label>Şifre</label><input type="password" id="reg-password" required minlength="6"></div>
-                    <div class="form-group"><label>Şifre tekrar</label><input type="password" id="reg-password2" required minlength="6"></div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">Hesap Oluştur</button>
+                    <div class="form-group"><label>${t('auth.password')}</label><input type="password" id="reg-password" required minlength="6"></div>
+                    <div class="form-group"><label>${t('auth.password_confirm')}</label><input type="password" id="reg-password2" required minlength="6"></div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1.5rem;">${t('auth.register_btn')}</button>
                 </form>
+                <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+                    ${t('auth.have_account')} <a href="#login" style="color: var(--accent); font-weight: 600;">${t('nav.login')}</a>
+                </p>
             </div>
         </div>
     `;
@@ -2571,12 +2594,12 @@ async function viewRegister(container) {
         const p1 = document.getElementById('reg-password').value;
         const p2 = document.getElementById('reg-password2').value;
         if (p1 !== p2) {
-            showToast('Şifreler eşleşmiyor', 'error');
+            showToast(t('auth.password_mismatch'), 'error');
             return;
         }
         const phone = phoneInputToApiPayload(document.getElementById('reg-phone'));
         if (!phone) {
-            showToast('Geçerli bir cep telefonu girin (05XX…)', 'error');
+            showToast(t('auth.invalid_phone'), 'error');
             return;
         }
         try {
@@ -2606,7 +2629,7 @@ async function viewMyReservations(container) {
         const data = await API.customer.getMyReservations();
         container.innerHTML = `
             <div class="container" style="padding-top: 4rem;">
-                <h1 style="margin-bottom: 3rem;">Rezervasyonlarım</h1>
+                <h1 style="margin-bottom: 3rem;">${t('res.my_title')}</h1>
                 <div class="grid">
                     ${data.reservations.length ? data.reservations.map(r => {
                         const escHtml = (s) => String(s ?? '')
@@ -2638,15 +2661,15 @@ async function viewMyReservations(container) {
                                 ${addrText ? `<div class="cust-res-addr">${escHtml(addrText)}</div>` : ''}
                                 <div class="cust-res-meta">
                                     <div class="cust-res-meta-row">
-                                        <span class="cust-res-k">Tarih</span>
+                                        <span class="cust-res-k">${t('res.date')}</span>
                                         <span class="cust-res-v">${escHtml(whenText)}</span>
                                     </div>
                                     <div class="cust-res-meta-row">
-                                        <span class="cust-res-k">Misafir</span>
+                                        <span class="cust-res-k">${t('res.guest')}</span>
                                         <span class="cust-res-v">${escHtml(String(r.total_guests ?? 1))}</span>
                                         <span class="cust-res-sep" aria-hidden="true"></span>
-                                        <span class="cust-res-k">Not</span>
-                                        <span class="cust-res-v">${escHtml(r.note && String(r.note).trim() ? r.note : '—')}</span>
+                                        <span class="cust-res-k">${t('res.note')}</span>
+                                        <span class="cust-res-v">${escHtml(r.note && String(r.note).trim() ? r.note : t('res.note_empty'))}</span>
                                     </div>
                                 </div>
                             </div>
@@ -2654,20 +2677,20 @@ async function viewMyReservations(container) {
                                 <span class="badge badge-${r.status}">${LOCALE.STATUS[r.status]}</span>
                                 ${r.status === 'pending' ? `
                                     <div class="cust-res-btnrow">
-                                        <button type="button" class="btn btn-sm cust-res-btn cust-res-btn--primary" onclick="window.showModifyReservationModal(${JSON.stringify(r).replace(/"/g, '&quot;')})">Değiştir</button>
-                                        <button type="button" class="btn btn-sm cust-res-btn cust-res-btn--danger" onclick="window.cancelBooking(${r.id})">İptal</button>
+                                        <button type="button" class="btn btn-sm cust-res-btn cust-res-btn--primary" onclick="window.showModifyReservationModal(${JSON.stringify(r).replace(/"/g, '&quot;')})">${t('res.modify')}</button>
+                                        <button type="button" class="btn btn-sm cust-res-btn cust-res-btn--danger" onclick="window.cancelBooking(${r.id})">${t('res.cancel')}</button>
                                     </div>
                                 ` : ''}
-                                ${r.status === 'approved' ? `<button type="button" class="btn btn-sm cust-res-btn cust-res-btn--ghost" onclick="window.showReviewModal(${r.id}, '${r.service_name.replace(/'/g,"\\'")}')">Yorum</button>` : ''}
+                                ${r.status === 'approved' ? `<button type="button" class="btn btn-sm cust-res-btn cust-res-btn--ghost" onclick="window.showReviewModal(${r.id}, '${r.service_name.replace(/'/g,"\\'")}')">${t('res.review')}</button>` : ''}
                             </div>
                         </div>
                     `;
-                    }).join('') : '<p>Rezervasyonunuz bulunamadı.</p>'}
+                    }).join('') : `<p>${t('res.none')}</p>`}
                 </div>
             </div>
         `;
         window.cancelBooking = async (id) => {
-            if (confirm("İptal etmek istiyor musunuz?")) {
+            if (confirm(t('res.confirm_cancel'))) {
                 try {
                     const res = await API.customer.cancelReservation(id);
                     showToast(res.msg);
@@ -2685,8 +2708,8 @@ async function viewMyReservations(container) {
                 if (isHotel) {
                     await window.openRoomBookingModal(
                         reservation.service_id,
-                        'Tarihleri Güncelle',
-                        svc?.room_type || svc?.name || 'Konaklama',
+                        t('res.modify_dates'),
+                        svc?.room_type || svc?.name || t('nav.biz_cat.accommodation'),
                         svc?.price || 0,
                         {
                             mode: 'modify',
@@ -2702,7 +2725,7 @@ async function viewMyReservations(container) {
 
                 await window.openAppointmentModal(
                     reservation.service_id,
-                    svc?.name || reservation.service_name || 'Randevu',
+                    svc?.name || reservation.service_name || t('res.review'),
                     svc?.price || 0,
                     {
                         mode: 'modify',
@@ -3101,9 +3124,13 @@ async function viewSuperAdminUsers(container) {
 async function viewSuperAdminLogs(container) {
     renderSuperAdminShell(container, '#superadmin-logs', 'Sistem Günlükleri',
         `
-        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
             <input id="sa-log-search" type="search" placeholder="Log ara (işlem/kullanıcı/içerik)..." style="flex:1; min-width: 240px; padding:0.65rem 0.85rem; border-radius:10px; border:1px solid #e5e7eb;">
             <button class="btn btn-outline btn-sm" onclick="window.clearSuperAdminLogSearch()">Temizle</button>
+        </div>
+        <div style="font-size:0.8rem; color: var(--text-muted); margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--accent);">
+            <strong>İpucu:</strong> <code>AND</code>, <code>OR</code>, <code>NOT</code> operatörlerini kullanabilirsiniz (büyük harfle).
+            Örnekler: <code>CREATE AND reservation</code> · <code>UPDATE OR DELETE</code> · <code>CREATE NOT service</code>
         </div>
         <div id="log-list" class="loading-row">Yükleniyor...</div>
         `
@@ -4787,82 +4814,83 @@ window.showStaffAvailabilityManager = async (serviceId, serviceName) => {
 };
 
 function viewHowItWorks(container) {
+    const partnerLink = `<a href="#partner-contact" style="color: var(--accent); font-weight: 600;">${t('footer.add_business')}</a>`;
     container.innerHTML = `
         <div class="container static-page">
-            <h1>Nasıl Çalışır?</h1>
-            <p class="lead">BETULBOOKING ile işletmeleri keşfedin, uygun tarih ve saati seçin, rezervasyonunuzu birkaç adımda tamamlayın.</p>
+            <h1>${t('hiw.title')}</h1>
+            <p class="lead">${t('hiw.lead')}</p>
             <div class="static-steps">
                 <div class="static-step">
                     <span class="static-step-num">1</span>
                     <div>
-                        <h2>Keşfet ve ara</h2>
-                        <p>Ana sayfadan il, ilçe veya anahtar kelime ile arama yapın. Kategorilere göre işletmeleri listeleyin, detay sayfasında hizmetleri inceleyin.</p>
+                        <h2>${t('hiw.step1_title')}</h2>
+                        <p>${t('hiw.step1_desc')}</p>
                     </div>
                 </div>
                 <div class="static-step">
                     <span class="static-step-num">2</span>
                     <div>
-                        <h2>Tarih ve saat seç</h2>
-                        <p>Otel odalarında giriş–çıkış tarihlerini; randevu hizmetlerinde uygun gün ve saati seçin. Müsaitlik takviminden kontrol edebilirsiniz.</p>
+                        <h2>${t('hiw.step2_title')}</h2>
+                        <p>${t('hiw.step2_desc')}</p>
                     </div>
                 </div>
                 <div class="static-step">
                     <span class="static-step-num">3</span>
                     <div>
-                        <h2>Rezervasyonu onayla</h2>
-                        <p>Giriş yaptıktan sonra rezervasyonunuzu oluşturun. İşletme onayı sonrası bildirim alırsınız; rezervasyonlarınızı panelden yönetebilirsiniz.</p>
+                        <h2>${t('hiw.step3_title')}</h2>
+                        <p>${t('hiw.step3_desc')}</p>
                     </div>
                 </div>
             </div>
             <p style="margin-top: 2rem; font-size: 0.95rem; color: var(--text-muted);">
-                İşletmenizi platforma eklemek isterseniz <a href="#partner-contact" style="color: var(--accent); font-weight: 600;">İşletmeni Ekle</a> sayfasından bize ulaşın.
+                ${t('hiw.cta_partner', { link: partnerLink })}
             </p>
         </div>
     `;
 }
 
 function viewPartnerContact(container) {
-    const categoryOptions = Object.entries(BUSINESS_TYPES)
-        .filter(([k]) => !['hotel', 'salon', 'spa'].includes(k))
-        .map(([k, label]) => `<option value="${k}">${label}</option>`)
+    // Kategori seçenekleri dile göre dinamik (BUSINESS_TYPES zaten Proxy)
+    const categoryOptions = ['konaklama','yeme-icme','guzellik','saglik','spor','etkinlik','hizmet','egitim']
+        .map((slug) => `<option value="${slug}">${getBusinessTypeLabel(slug)}</option>`)
         .join('');
     container.innerHTML = `
         <div class="container partner-form-wrap">
             <div class="partner-form-card">
-                <h1>İşletmeni Ekle</h1>
-                <p class="sub">İşletmenizi BETULBOOKING üzerinde listelemek için süreç ekibimizle birlikte yürütülür. Aşağıdaki formu doldurun; sizinle iletişime geçip hesap ve içerik kurulumunu tamamlayalım.</p>
+                <h1>${t('partner.title')}</h1>
+                <p class="sub">${t('partner.sub')}</p>
                 <div class="partner-process">
-                    <strong>Süreç:</strong> Talep → Kısa ön görüşme → Onay ve sözleşme → İşletme profili &amp; hizmetlerin yayına alınması. Ortalama süre işletme büyüklüğüne göre değişir.
+                    <strong>${t('partner.process_label')}</strong> ${t('partner.process').replace(/^Süreç: /, '').replace(/^Process: /, '')}
                 </div>
                 <form id="partner-form">
                     <div class="form-group">
-                        <label for="partner-name">Ad Soyad *</label>
-                        <input type="text" id="partner-name" required class="form-control" placeholder="Yetkili adı">
+                        <label for="partner-name">${t('partner.name')} *</label>
+                        <input type="text" id="partner-name" required class="form-control" placeholder="${t('partner.name_placeholder')}">
                     </div>
                     <div class="form-group">
-                        <label for="partner-business">İşletme adı</label>
-                        <input type="text" id="partner-business" class="form-control" placeholder="Ticari unvan veya marka">
+                        <label for="partner-business">${t('partner.business')}</label>
+                        <input type="text" id="partner-business" class="form-control" placeholder="${t('partner.business_placeholder')}">
                     </div>
                     <div class="form-group">
-                        <label for="partner-email">E-posta *</label>
+                        <label for="partner-email">${t('partner.email')} *</label>
                         <input type="email" id="partner-email" required class="form-control" placeholder="ornek@firma.com">
                     </div>
                     <div class="form-group">
-                        <label for="partner-phone">Telefon</label>
+                        <label for="partner-phone">${t('partner.phone')}</label>
                         <input type="tel" id="partner-phone" class="form-control" placeholder="05xx xxx xx xx">
                     </div>
                     <div class="form-group">
-                        <label for="partner-category">İşletme kategorisi</label>
+                        <label for="partner-category">${t('partner.category')}</label>
                         <select id="partner-category" class="pretty-select">
-                            <option value="">Seçiniz</option>
+                            <option value="">${t('partner.category_placeholder')}</option>
                             ${categoryOptions}
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="partner-message">Mesajınız</label>
-                        <textarea id="partner-message" class="form-control" rows="4" placeholder="Şehir, hizmet sayısı, web siteniz veya eklemek istediğiniz notlar..."></textarea>
+                        <label for="partner-message">${t('partner.message')}</label>
+                        <textarea id="partner-message" class="form-control" rows="4" placeholder="${t('partner.message_placeholder')}"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" id="partner-submit" style="width: 100%;">Talebi Gönder</button>
+                    <button type="submit" class="btn btn-primary" id="partner-submit" style="width: 100%;">${t('partner.submit')}</button>
                 </form>
             </div>
         </div>
@@ -4880,7 +4908,7 @@ function viewPartnerContact(container) {
                 category: document.getElementById('partner-category').value,
                 message: document.getElementById('partner-message').value.trim()
             });
-            showToast(res.msg || 'Gönderildi');
+            showToast(res.msg || t('partner.sent'));
             e.target.reset();
         } catch (err) {
             showToast(err.message, 'error');
@@ -4903,9 +4931,9 @@ function getRequiredRoleForHash(hash) {
 function renderAccessDenied(container) {
     container.innerHTML = `
         <div class="container" style="padding: 5rem; text-align: center; max-width: 520px; margin: 0 auto;">
-            <h1 style="margin-bottom: 1rem;">Erişim reddedildi</h1>
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Bu alanı görüntülemek için yetkiniz yok.</p>
-            <button type="button" class="btn btn-primary" onclick="window.location.hash='${HOME_HASH}'">Ana Sayfaya Dön</button>
+            <h1 style="margin-bottom: 1rem;">${t('access.denied_title')}</h1>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">${t('access.denied_desc')}</p>
+            <button type="button" class="btn btn-primary" onclick="window.location.hash='${HOME_HASH}'">${t('access.back_home')}</button>
         </div>`;
 }
 
@@ -5025,3 +5053,29 @@ window.handleImageUpload = async (e) => {
 window.onhashchange = router;
 window.onload = router;
 router();
+
+// ─── i18n: Dil Seçici Butonu ──────────────────────────────────────
+function initLangSwitcher() {
+    if (!window.i18n) return; // i18n.js yüklenmediyse sessizce çık
+    const switcher = document.getElementById('lang-switcher');
+    if (!switcher) return;
+
+    const current = window.i18n.getCurrentLang();
+
+    // Aktif dili işaretle
+    switcher.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === current);
+        // Tıklama handler'ı
+        btn.onclick = (e) => {
+            e.preventDefault();
+            const targetLang = btn.dataset.lang;
+            if (targetLang && targetLang !== window.i18n.getCurrentLang()) {
+                window.i18n.setLang(targetLang); // localStorage'a yazar + sayfayı yeniler
+            }
+        };
+    });
+}
+
+// Sayfa ilk yüklendiğinde ve her route değişiminde çalıştır
+document.addEventListener('DOMContentLoaded', initLangSwitcher);
+initLangSwitcher(); // Güvenlik için hemen de çağır (DOMContentLoaded geç gelebilir)
