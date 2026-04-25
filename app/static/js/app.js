@@ -508,24 +508,26 @@ async function viewHotels(container) {
         async function performGlobalSearch(query) {
             const resultsDiv = document.getElementById('search-results');
             resultsDiv.style.display = 'block';
-            resultsDiv.innerHTML = '<p style="padding: 1rem; color: #999; text-align: center;">Aranıyor...</p>';
+            resultsDiv.innerHTML = `<p style="padding: 1rem; color: #999; text-align: center;">${t('search.searching')}</p>`;
 
             const il = document.getElementById('filter-il')?.value || '';
             const ilce = document.getElementById('filter-ilce')?.value || '';
+            const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+            const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
 
             try {
                 const data = await API.customer.search(query, il, ilce);
                 const hasResults = data.businesses.length || data.services.length;
 
                 if (!hasResults) {
-                    resultsDiv.innerHTML = '<p style="padding: 1.5rem; color: #999; text-align: center;">Sonuç bulunamadı</p>';
+                    resultsDiv.innerHTML = `<p style="padding: 1.5rem; color: #999; text-align: center;">${t('common.no_results')}</p>`;
                     return;
                 }
 
                 let html = '';
                 
                 if (data.businesses.length) {
-                    html += '<div style="padding: 0.8rem 1rem; background: #f8fafc; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">İşletmeler</div>';
+                    html += `<div style="padding: 0.8rem 1rem; background: #f8fafc; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${t('nav.businesses')}</div>`;
                     html += data.businesses.map(b => `
                         <a href="#business-detail?id=${b.id}" class="search-result-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; text-decoration: none; border-bottom: 1px solid #f0f0f0;">
                             <img src="${b.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=100'}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 8px;">
@@ -538,13 +540,13 @@ async function viewHotels(container) {
                 }
 
                 if (data.services.length) {
-                    html += '<div style="padding: 0.8rem 1rem; background: #f8fafc; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Hizmetler</div>';
+                    html += `<div style="padding: 0.8rem 1rem; background: #f8fafc; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${t('biz.services_heading')}</div>`;
                     html += data.services.map(s => `
                         <a href="#service-detail?id=${s.id}" class="search-result-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; text-decoration: none; border-bottom: 1px solid #f0f0f0;">
-                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #16a34a, #059669); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 600;">${s.category === 'hotel' ? 'ODA' : 'HZM'}</div>
+                            <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #16a34a, #059669); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 600;">${s.category === 'hotel' ? t('search.badge_room') : t('search.badge_service')}</div>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">${s.name}</div>
-                                <div style="font-size: 0.8rem; color: #64748b;">${s.category === 'hotel' ? (s.room_type || 'Oda') : 'Randevu'}${s.price ? ' - ' + s.price.toLocaleString('tr-TR') + ' ₺' : ''}</div>
+                                <div style="font-size: 0.8rem; color: #64748b;">${s.category === 'hotel' ? (s.room_type || t('biz.room_standart')) : t('sa.cat.appointment')}${s.price ? ' - ' + s.price.toLocaleString(numberLocale) + ' ₺' : ''}</div>
                             </div>
                         </a>
                     `).join('');
@@ -720,34 +722,36 @@ async function viewHotelDetail(container) {
 
         window.showRoomCalendar = async (roomId, roomName, roomType, price) => {
             const today = new Date().toISOString().split('T')[0];
+            const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+            const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
             const html = `
                 <div style="margin-bottom: 1rem;">
-                    <p style="color:#666; margin-bottom:0.5rem;">${roomType} ${price ? `- <strong style="color:var(--accent)">${price.toLocaleString('tr-TR')} ₺/gece</strong>` : ''}</p>
+                    <p style="color:#666; margin-bottom:0.5rem;">${roomType} ${price ? `- <strong style="color:var(--accent)">${price.toLocaleString(numberLocale)} ₺${t('res.per_night')}</strong>` : ''}</p>
                 </div>
                 <div style="margin-bottom:1.5rem; padding:1rem; background:#f0fdf4; border-radius:8px; border:1px solid #10b981;">
-                    <p style="font-size:0.9rem; margin-bottom:0.8rem;"><strong>Tarih Seçin:</strong></p>
+                    <p style="font-size:0.9rem; margin-bottom:0.8rem;"><strong>${t('biz.select_dates')}</strong></p>
                     <div style="display:flex; gap:1rem; flex-wrap:wrap;">
                         <div>
-                            <label style="font-size:0.8rem; color:#666;">Giriş</label>
+                            <label style="font-size:0.8rem; color:#666;">${t('res.check_in')}</label>
                             <input type="date" id="cal-check-in" min="${today}" style="display:block; padding:0.5rem; border:1px solid #ddd; border-radius:6px;">
                         </div>
                         <div>
-                            <label style="font-size:0.8rem; color:#666;">Çıkış</label>
+                            <label style="font-size:0.8rem; color:#666;">${t('res.check_out')}</label>
                             <input type="date" id="cal-check-out" min="${today}" style="display:block; padding:0.5rem; border:1px solid #ddd; border-radius:6px;">
                         </div>
-                        <button class="btn btn-primary" style="align-self:flex-end;" onclick="window.checkAndBook(${roomId})">Rezervasyon Yap</button>
+                        <button class="btn btn-primary" style="align-self:flex-end;" onclick="window.checkAndBook(${roomId})">${t('modal.book')}</button>
                     </div>
                 </div>
-                <h4 style="margin-bottom:0.8rem;">Müsaitlik Takvimi</h4>
+                <h4 style="margin-bottom:0.8rem;">${t('biz.availability_calendar')}</h4>
                 <div id="room-cal-grid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:0.3rem; font-size:0.8rem;">
-                    <div class="loading-row" style="grid-column:1/-1;">Yükleniyor...</div>
+                    <div class="loading-row" style="grid-column:1/-1;">${t('common.loading_generic')}</div>
                 </div>
                 <p style="margin-top:0.8rem; font-size:0.75rem; color:#666;">
-                    <span style="display:inline-block; width:10px; height:10px; background:#f0fdf4; border:1px solid #10b981; border-radius:2px;"></span> Müsait
-                    <span style="display:inline-block; width:10px; height:10px; background:#fef2f2; border:1px solid #ef4444; border-radius:2px; margin-left:10px;"></span> Dolu
+                    <span style="display:inline-block; width:10px; height:10px; background:#f0fdf4; border:1px solid #10b981; border-radius:2px;"></span> ${t('cal.available')}
+                    <span style="display:inline-block; width:10px; height:10px; background:#fef2f2; border:1px solid #ef4444; border-radius:2px; margin-left:10px;"></span> ${t('cal.booked')}
                 </p>
             `;
-            showModal(`${roomName} - Müsaitlik`, html);
+            showModal(`${roomName} - ${t('biz.availability')}`, html);
             loadCustomerRoomCalendar(roomId);
         };
 
@@ -755,7 +759,7 @@ async function viewHotelDetail(container) {
             const grid = document.getElementById('room-cal-grid');
             try {
                 const avail = await API.customer.getAvailability(roomId);
-                const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+                const dayNames = [t('common.day_sun'),t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat')];
                 
                 grid.innerHTML = dayNames.map(d => 
                     `<div style="text-align:center; font-weight:600; padding:0.2rem; color:#666; font-size:0.7rem;">${d}</div>`
@@ -803,8 +807,8 @@ async function viewHotelDetail(container) {
         window.checkAndBook = async (roomId) => {
             const checkIn = document.getElementById('cal-check-in').value;
             const checkOut = document.getElementById('cal-check-out').value;
-            if (!checkIn || !checkOut) return showToast('Lütfen giriş ve çıkış tarihi seçin.', 'error');
-            if (new Date(checkOut) <= new Date(checkIn)) return showToast('Çıkış tarihi girişten sonra olmalı.', 'error');
+            if (!checkIn || !checkOut) return showToast(t('toast.pick_dates'), 'error');
+            if (new Date(checkOut) <= new Date(checkIn)) return showToast(t('toast.checkout_after_checkin'), 'error');
             
             const avail = await API.customer.getAvailability(roomId);
             const isBooked = avail.booked_ranges?.some(r => {
@@ -812,7 +816,7 @@ async function viewHotelDetail(container) {
             });
             
             if (isBooked) {
-                showToast('Seçilen tarihler için bu oda dolu.', 'error');
+                showToast(t('toast.room_unavailable'), 'error');
                 return;
             }
             
@@ -827,11 +831,14 @@ async function viewHotelDetail(container) {
 
             if (!start || !end) return;
             if (new Date(end) <= new Date(start)) {
-                showToast("Çıkış tarihi girişten sonra olmalıdır.", "error");
+                showToast(t('toast.checkout_after_checkin'), "error");
                 return;
             }
 
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">Yükleniyor...</div>';
+            grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center;">${t('common.loading_generic')}</div>`;
+
+            const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+            const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
 
             try {
                 const rooms = await API.customer.getHotelRooms(id);
@@ -846,9 +853,9 @@ async function viewHotelDetail(container) {
                              ${isBooked ? '' : `onclick="selectRoomForBooking(${room.id}, '${room.name}', this)"`}>
                             <div class="status-indicator ${isBooked ? 'status-booked' : 'status-available'}"></div>
                             <div class="room-number">${room.room_number || '#'}</div>
-                            <div class="room-type-label">${room.room_type || 'Standart'}</div>
-                            ${room.price ? `<div style="font-size:0.7rem; color:var(--accent); font-weight:600;">${room.price.toLocaleString('tr-TR')} ₺</div>` : ''}
-                            <div style="font-size: 0.65rem; margin-top: 0.3rem; opacity: 0.7;">${isBooked ? 'DOLU' : 'MÜSAİT'}</div>
+                            <div class="room-type-label">${room.room_type || t('biz.room_standart')}</div>
+                            ${room.price ? `<div style="font-size:0.7rem; color:var(--accent); font-weight:600;">${room.price.toLocaleString(numberLocale)} ₺</div>` : ''}
+                            <div style="font-size: 0.65rem; margin-top: 0.3rem; opacity: 0.7;">${isBooked ? t('cal.booked').toUpperCase() : t('cal.available').toUpperCase()}</div>
                         </div>
                     `;
                 }));
@@ -875,7 +882,7 @@ async function viewHotelDetail(container) {
         };
 
         window.redirectToBooking = () => {
-            if (!window.lastSelectedRoomId) return showToast("Lütfen önce bir oda seçin.", "error");
+            if (!window.lastSelectedRoomId) return showToast(t('toast.pick_room_first'), "error");
             const start = document.getElementById('grid-check-in').value;
             const end = document.getElementById('grid-check-out').value;
             window.location.hash = `#service-detail?id=${window.lastSelectedRoomId}&start=${start}&end=${end}`;
@@ -977,8 +984,8 @@ async function viewBusinessDetail(container) {
                                     <div class="service-info">
                                         <h3 style="font-size: 1.2rem;">${s.name}</h3>
                                         <p style="color: var(--text-muted); font-size: 0.85rem;">${s.room_type || 'Standart'} - ${s.room_number || ''}</p>
-                                        ${s.price ? `<p style="font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: 0.5rem 0;">${s.price.toLocaleString('tr-TR')} ₺ / gece</p>` : ''}
-                                        <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="window.openRoomBookingModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', '${s.room_type || 'Standart'}', ${s.price || 0})">Rezervasyon Yap</button>
+                                        ${s.price ? `<p style="font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: 0.5rem 0;">${s.price.toLocaleString(numberLocale)} ₺ ${t('res.per_night')}</p>` : ''}
+                                        <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="window.openRoomBookingModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', '${s.room_type || 'Standart'}', ${s.price || 0})">${t('modal.book')}</button>
                                     </div>
                                 </div>
                             `).join('')}
@@ -995,7 +1002,7 @@ async function viewBusinessDetail(container) {
                                     <img src="${s.image_url || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600'}" class="service-img">
                                     <div class="service-info">
                                         <h3 style="font-size: 1.2rem;">${s.name}</h3>
-                                        ${s.price ? `<p style="font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: 0.5rem 0;">${s.price.toLocaleString('tr-TR')} ₺</p>` : ''}
+                                        ${s.price ? `<p style="font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: 0.5rem 0;">${s.price.toLocaleString(numberLocale)} ₺</p>` : ''}
                                         <button class="btn btn-outline" style="width: 100%; margin-top: 1rem; border-color: var(--accent); color: var(--accent);" onclick="window.openAppointmentModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', ${s.price || 0})">Randevu Al</button>
                                     </div>
                                 </div>
@@ -1059,7 +1066,37 @@ async function viewBusinessDetail(container) {
     }
 }
 
-const _TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+/**
+ * Global `numberLocale` getter — i18n diline göre toLocaleString locale'ünü verir.
+ * Her fonksiyon scope'unda override edilmeden çalışır.
+ */
+Object.defineProperty(window, 'numberLocale', {
+    get() {
+        const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+        return lang === 'tr' ? 'tr-TR' : 'en-US';
+    },
+    configurable: true
+});
+
+/**
+ * Ay adları — i18n'e bağlı dinamik (eski adı _TR_MONTHS, geriye dönük uyumluluk için Proxy).
+ * Erişim: _TR_MONTHS[m] → t('cal.month.0..11')
+ */
+const _TR_MONTHS = new Proxy([], {
+    get(_, prop) {
+        if (prop === 'length') return 12;
+        if (prop === Symbol.iterator) {
+            return function*() {
+                for (let i = 0; i < 12; i++) yield t('cal.month.' + i);
+            };
+        }
+        if (/^\d+$/.test(prop)) {
+            const i = parseInt(prop, 10);
+            if (i >= 0 && i < 12) return t('cal.month.' + i);
+        }
+        return undefined;
+    }
+});
 
 function _isoFromYMD(y, m0, d) {
     return `${y}-${String(m0 + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -1195,7 +1232,7 @@ window.openHotelAvailCalendar = async (serviceId, gridId) => {
     const role = user.role || '';
     const grid = document.getElementById(gridId);
     if (!grid) return;
-    grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1;">Yükleniyor...</div>';
+    grid.innerHTML = `<div class="loading-row" style="grid-column:1/-1;">${t('common.loading_generic')}</div>`;
 
     try {
         const prev = (window._hotelAvailCtx && window._hotelAvailCtx.serviceId === serviceId && window._hotelAvailCtx.gridId === gridId)
@@ -1308,7 +1345,7 @@ window.toggleHotelAvailDay = async (iso) => {
     // bookedRanges already disables click; keep a guard anyway
     const ms = _stripDay(_parseIsoLocal(iso));
     if (window._hotelAvailCtx.bookedRanges && _dayInBookedRanges(ms, window._hotelAvailCtx.bookedRanges)) {
-        showToast('Bu tarih rezerve. İptal etmeden kapatamazsınız.', 'error');
+        showToast(t('toast.date_locked'), 'error');
         return;
     }
     try {
@@ -1338,7 +1375,7 @@ window.pickHotelAvailRangeDay = (iso) => {
     const ms = _stripDay(_parseIsoLocal(iso));
     if (ms < today.getTime()) return;
     if (window._hotelAvailCtx.bookedRanges && _dayInBookedRanges(ms, window._hotelAvailCtx.bookedRanges)) {
-        showToast('Bu gün rezerve (kilitli).', 'error');
+        showToast(t('toast.day_locked'), 'error');
         return;
     }
 
@@ -1434,7 +1471,7 @@ window.openApptAvailCalendar = async (serviceId, gridId, summaryId = null) => {
     const role = user.role || '';
     const grid = document.getElementById(gridId);
     if (!grid) return;
-    grid.innerHTML = '<div class="loading-row">Yükleniyor...</div>';
+    grid.innerHTML = `<div class="loading-row">${t('common.loading_generic')}</div>`;
 
     try {
         const prev = (window._apptAvailCtx && window._apptAvailCtx.serviceId === serviceId && window._apptAvailCtx.gridId === gridId)
@@ -1611,35 +1648,38 @@ window.openRoomBookingModal = async (roomId, roomName, roomType, price, ctx = {}
 
     const guestsBlock = mode === 'modify' ? '' : `
         <div style="padding: 1.5rem; background: #f9fafb; border-radius: 12px; margin-bottom: 1.5rem;">
-            <p style="font-weight: 600; margin-bottom: 1rem;">Misafir Sayısı</p>
+            <p style="font-weight: 600; margin-bottom: 1rem;">${t('modal.room_guests')}</p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div>
-                    <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 0.3rem;">Yetişkin</label>
+                    <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 0.3rem;">${t('modal.adults')}</label>
                     <select id="modal-adults" class="pretty-select">
-                        <option value="1">1 Yetişkin</option>
-                        <option value="2" selected>2 Yetişkin</option>
-                        <option value="3">3 Yetişkin</option>
-                        <option value="4">4 Yetişkin</option>
+                        <option value="1">${t('modal.adult_count_1')}</option>
+                        <option value="2" selected>${t('modal.adult_count_2')}</option>
+                        <option value="3">${t('modal.adult_count_3')}</option>
+                        <option value="4">${t('modal.adult_count_4')}</option>
                     </select>
                 </div>
                 <div>
-                    <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 0.3rem;">Çocuk</label>
+                    <label style="font-size: 0.85rem; color: #666; display: block; margin-bottom: 0.3rem;">${t('modal.children')}</label>
                     <select id="modal-children" class="pretty-select">
-                        <option value="0" selected>0 Çocuk</option>
-                        <option value="1">1 Çocuk</option>
-                        <option value="2">2 Çocuk</option>
-                        <option value="3">3 Çocuk</option>
+                        <option value="0" selected>${t('modal.child_count_0')}</option>
+                        <option value="1">${t('modal.child_count_1')}</option>
+                        <option value="2">${t('modal.child_count_2')}</option>
+                        <option value="3">${t('modal.child_count_3')}</option>
                     </select>
                 </div>
             </div>
         </div>
     `;
 
+    const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+    const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
+
     const priceSummary = (mode === 'modify' || !price) ? '' : `
         <div id="room-price-summary" style="display: none; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; margin-bottom: 1.5rem; color: white;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <p style="font-size: 0.9rem; opacity: 0.9;">Toplam (<span id="room-nights-count">0</span> gece)</p>
+                    <p style="font-size: 0.9rem; opacity: 0.9;">${t('modal.total')} (<span id="room-nights-count">0</span> ${t('res.nights')})</p>
                     <p style="font-size: 1.8rem; font-weight: 700;" id="room-total-price">0 ₺</p>
                 </div>
                 <div id="room-date-range" style="text-align: right; font-size: 0.85rem; opacity: 0.9;"></div>
@@ -1651,32 +1691,32 @@ window.openRoomBookingModal = async (roomId, roomName, roomType, price, ctx = {}
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
-    const primaryLabel = mode === 'modify' ? 'Kaydet' : 'Rezervasyon Yap';
+    const primaryLabel = mode === 'modify' ? t('modal.save') : t('modal.book');
 
     const html = `
         <div style="margin-bottom: 1.5rem;">
             <p style="color: #666; margin-bottom: 0.5rem;">${roomType}</p>
-            ${price && mode !== 'modify' ? `<p style="font-size: 1.3rem; font-weight: 700; color: var(--accent);">${price.toLocaleString('tr-TR')} ₺ <small style="font-size: 0.8rem; font-weight: 400; color: #999;">/ gece</small></p>` : ''}
+            ${price && mode !== 'modify' ? `<p style="font-size: 1.3rem; font-weight: 700; color: var(--accent);">${price.toLocaleString(numberLocale)} ₺ <small style="font-size: 0.8rem; font-weight: 400; color: #999;">${t('res.per_night')}</small></p>` : ''}
         </div>
         
         <div style="padding: 1.5rem; background: #f9fafb; border-radius: 12px; margin-bottom: 1.5rem;">
-            <p style="font-weight: 600; margin-bottom: 0.35rem;">Giriş ve çıkış tarihleri</p>
-            <p style="font-size: 0.82rem; color: #666; margin-bottom: 1rem;">Önce giriş gününe, sonra çıkış gününe tıklayın.${mode === 'modify' ? ' Kendi rezervasyonunuzdaki günler müsait sayılır; yalnızca başkalarının tarihleri dolu görünür.' : ' Dolu günler seçilemez.'}</p>
+            <p style="font-weight: 600; margin-bottom: 0.35rem;">${t('modal.dates_title')}</p>
+            <p style="font-size: 0.82rem; color: #666; margin-bottom: 1rem;">${mode === 'modify' ? t('modal.dates_hint_modify') : t('modal.dates_hint_create')}</p>
             <input type="hidden" id="modal-check-in" value="">
             <input type="hidden" id="modal-check-out" value="">
-            <div id="modal-room-calendar">Yükleniyor…</div>
+            <div id="modal-room-calendar">${t('modal.loading')}</div>
         </div>
         
         ${guestsBlock}
         ${priceSummary}
         
         <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="font-size: 0.85rem; color: #666;">Not (opsiyonel)</label>
-            <textarea id="modal-note" rows="2" style="width: 100%; padding: 0.8rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: none;" placeholder="Özel istekleriniz...">${noteVal}</textarea>
+            <label style="font-size: 0.85rem; color: #666;">${t('modal.note_optional')}</label>
+            <textarea id="modal-note" rows="2" style="width: 100%; padding: 0.8rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: none;" placeholder="${t('modal.note_placeholder')}">${noteVal}</textarea>
         </div>
         
         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button class="btn btn-outline" style="flex: 1;" onclick="closeModal()">İptal</button>
+            <button class="btn btn-outline" style="flex: 1;" onclick="closeModal()">${t('modal.cancel')}</button>
             <button class="btn btn-primary" style="flex: 1;" id="room-book-btn" onclick="window.confirmRoomBooking()">${primaryLabel}</button>
         </div>
     `;
@@ -1790,7 +1830,7 @@ window.paintHotelModalCalendar = function () {
             <span>${title}</span>
             <button type="button" class="btn btn-sm btn-outline" onclick="window.shiftHotelModalMonth(1)">›</button>
         </div>
-        <div class="inline-cal-weekdays">${['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((x) => `<div>${x}</div>`).join('')}</div>
+        <div class="inline-cal-weekdays">${[t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat'),t('common.day_sun')].map((x) => `<div>${x}</div>`).join('')}</div>
         <div class="inline-cal-grid">${gridHtml}</div>
         <div class="inline-cal-legend">
             <span><i></i> Müsait</span>
@@ -1802,7 +1842,7 @@ window.paintHotelModalCalendar = function () {
 window.initHotelModalCalendar = async function (roomId, opts = {}) {
     const root = document.getElementById('modal-room-calendar');
     if (!root) return;
-    root.innerHTML = '<p style="color:#666;">Yükleniyor…</p>';
+    root.innerHTML = `<p style="color:#666;">${t('modal.loading')}</p>`;
     try {
         const exId = (window._roomModalCtx?.mode === 'modify' && window._roomModalCtx?.reservationId)
             ? window._roomModalCtx.reservationId
@@ -1834,7 +1874,7 @@ window.initHotelModalCalendar = async function (roomId, opts = {}) {
 
 window.confirmRoomBooking = async () => {
     if (!localStorage.getItem('token')) {
-        showToast("Rezervasyon yapabilmek için giriş yapmalısınız.", "error");
+        showToast(t('toast.login_to_book'), "error");
         setTimeout(() => { window.location.hash = '#login'; }, 1500);
         return;
     }
@@ -1843,12 +1883,12 @@ window.confirmRoomBooking = async () => {
     const checkOut = document.getElementById('modal-check-out').value;
     
     if (!checkIn || !checkOut) {
-        showToast('Lütfen giriş ve çıkış tarihi seçin.', 'error');
+        showToast(t('toast.pick_dates'), 'error');
         return;
     }
     
     if (new Date(checkOut) <= new Date(checkIn)) {
-        showToast('Çıkış tarihi girişten sonra olmalı.', 'error');
+        showToast(t('toast.checkout_after_checkin'), 'error');
         return;
     }
     
@@ -1857,7 +1897,7 @@ window.confirmRoomBooking = async () => {
     });
     
     if (isBooked) {
-        showToast('Seçilen tarihler için bu oda dolu.', 'error');
+        showToast(t('toast.room_unavailable'), 'error');
         return;
     }
     
@@ -1874,7 +1914,7 @@ window.confirmRoomBooking = async () => {
                 note: noteEl ? noteEl.value : ''
             });
             closeModal();
-            showToast('Rezervasyon güncellendi');
+            showToast(t('toast.reservation_updated'));
             if (window._roomModalCtx.onSuccess) window._roomModalCtx.onSuccess();
             else window.location.hash = '#reservations';
         } else {
@@ -1891,13 +1931,13 @@ window.confirmRoomBooking = async () => {
                 }
             });
             closeModal();
-            showToast("Rezervasyon başarıyla oluşturuldu!");
+            showToast(t('toast.reservation_created'));
             window.location.hash = '#reservations';
         }
     } catch (err) {
         showToast(err.message, 'error');
         btn.disabled = false;
-        btn.textContent = window._roomModalCtx?.mode === 'modify' ? 'Kaydet' : 'Rezervasyon Yap';
+        btn.textContent = window._roomModalCtx?.mode === 'modify' ? t('modal.save') : t('modal.book');
     }
 };
 
@@ -1920,43 +1960,45 @@ window.openAppointmentModal = async (serviceId, serviceName, price, ctx = {}) =>
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
-    const primaryLabel = mode === 'modify' ? 'Kaydet' : 'Rezervasyon Yap';
+    const primaryLabel = mode === 'modify' ? t('modal.save') : t('modal.book');
+    const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+    const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
 
     const priceSummaryBlock = (mode === 'modify' || !price) ? '' : `
         <div id="appt-price-summary" style="display: none; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; margin-bottom: 1.5rem; color: white;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span id="appt-selected-time" style="font-size: 0.95rem;"></span>
-                <span style="font-size: 1.3rem; font-weight: 700;">${price ? price.toLocaleString('tr-TR') + ' ₺' : ''}</span>
+                <span style="font-size: 1.3rem; font-weight: 700;">${price ? price.toLocaleString(numberLocale) + ' ₺' : ''}</span>
             </div>
         </div>
     `;
 
     const html = `
-        ${price && mode !== 'modify' ? `<div style="margin-bottom: 1.5rem;"><p style="font-size: 1.3rem; font-weight: 700; color: var(--accent);">${price.toLocaleString('tr-TR')} ₺</p></div>` : ''}
+        ${price && mode !== 'modify' ? `<div style="margin-bottom: 1.5rem;"><p style="font-size: 1.3rem; font-weight: 700; color: var(--accent);">${price.toLocaleString(numberLocale)} ₺</p></div>` : ''}
         
         <div style="padding: 1.5rem; background: #f9fafb; border-radius: 12px; margin-bottom: 1.5rem;">
-            <p style="font-weight: 600; margin-bottom: 0.35rem;">1. Gün seçin</p>
-            <p style="font-size: 0.82rem; color: #666; margin-bottom: 1rem;">Takvimden bir güne tıklayın; ardından saatleri seçin.</p>
+            <p style="font-weight: 600; margin-bottom: 0.35rem;">${t('modal.appt_step_day')}</p>
+            <p style="font-size: 0.82rem; color: #666; margin-bottom: 1rem;">${t('modal.appt_step_day_hint')}</p>
             <input type="hidden" id="modal-appt-date" value="">
             <div id="modal-appt-calendar-wrap"></div>
         </div>
         
         <div style="padding: 1.5rem; background: #f9fafb; border-radius: 12px; margin-bottom: 1.5rem;">
-            <p style="font-weight: 600; margin-bottom: 1rem;">2. Saat Seçin</p>
+            <p style="font-weight: 600; margin-bottom: 1rem;">${t('modal.appt_step_time')}</p>
             <div id="modal-appt-slots" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
-                <p style="grid-column: 1/-1; color: #999; text-align: center;">Önce takvimden gün seçin</p>
+                <p style="grid-column: 1/-1; color: #999; text-align: center;">${t('modal.appt_pick_day_first')}</p>
             </div>
         </div>
         
         <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="font-size: 0.85rem; color: #666;">Not (opsiyonel)</label>
+            <label style="font-size: 0.85rem; color: #666;">${t('modal.note_optional')}</label>
             <textarea id="modal-appt-note" rows="2" style="width: 100%; padding: 0.8rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: none;" placeholder="Özel istekleriniz...">${noteVal}</textarea>
         </div>
         
         ${priceSummaryBlock}
         
         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button class="btn btn-outline" style="flex: 1;" onclick="closeModal()">İptal</button>
+            <button class="btn btn-outline" style="flex: 1;" onclick="closeModal()">${t('modal.cancel')}</button>
             <button class="btn btn-primary" style="flex: 1;" id="appt-book-btn" onclick="window.confirmAppointmentBooking()">${primaryLabel}</button>
         </div>
     `;
@@ -2034,7 +2076,7 @@ window.paintApptModalCalendar = function () {
             <span>${title}</span>
             <button type="button" class="btn btn-sm btn-outline" onclick="window.shiftApptModalMonth(1)">›</button>
         </div>
-        <div class="inline-cal-weekdays">${['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((x) => `<div>${x}</div>`).join('')}</div>
+        <div class="inline-cal-weekdays">${[t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat'),t('common.day_sun')].map((x) => `<div>${x}</div>`).join('')}</div>
         <div class="inline-cal-grid">${gridHtml}</div>
     `;
 };
@@ -2045,7 +2087,7 @@ window.loadModalAppointmentSlots = async (serviceId) => {
     
     if (!date) return;
     
-    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">Yükleniyor...</p>';
+    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #999;">${t('common.loading_generic')}</p>`;
     
     try {
         const data = await API.customer.getAvailability(serviceId, date);
@@ -2096,13 +2138,13 @@ window.selectModalSlot = (slotId, el) => {
 
 window.confirmAppointmentBooking = async () => {
     if (!localStorage.getItem('token')) {
-        showToast("Rezervasyon yapabilmek için giriş yapmalısınız.", "error");
+        showToast(t('toast.login_to_book'), "error");
         setTimeout(() => { window.location.hash = '#login'; }, 1500);
         return;
     }
     
     if (!window._selectedAppointmentSlot) {
-        showToast('Lütfen bir saat seçin.', 'error');
+        showToast(t('toast.pick_time'), 'error');
         return;
     }
     
@@ -2118,7 +2160,7 @@ window.confirmAppointmentBooking = async () => {
                 note: noteEl ? noteEl.value : ''
             });
             closeModal();
-            showToast('Rezervasyon güncellendi');
+            showToast(t('toast.reservation_updated'));
             if (window._apptModalCtx.onSuccess) window._apptModalCtx.onSuccess();
             else window.location.hash = '#reservations';
         } else {
@@ -2128,13 +2170,13 @@ window.confirmAppointmentBooking = async () => {
                 note: document.getElementById('modal-appt-note').value
             });
             closeModal();
-            showToast("Rezervasyon başarıyla oluşturuldu!");
+            showToast(t('toast.reservation_created'));
             window.location.hash = '#reservations';
         }
     } catch (err) {
         showToast(err.message, 'error');
         btn.disabled = false;
-        btn.textContent = window._apptModalCtx?.mode === 'modify' ? 'Kaydet' : 'Rezervasyon Yap';
+        btn.textContent = window._apptModalCtx?.mode === 'modify' ? t('modal.save') : t('modal.book');
     }
 };
 
@@ -2163,7 +2205,7 @@ async function viewServiceDetail(container) {
                         
                         ${!isHotel ? `
                             <div style="margin-top: 3rem; background: white; padding: 2rem; border-radius: 12px; box-shadow: var(--shadow);">
-                                <h3>1. Gün seçin</h3>
+                                <h3>${t('modal.appt_step_day')}</h3>
                                 <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.5rem 0 1rem;">Takvimden gün seçtikten sonra uygun saate tıklayın.</p>
                                 <input type="hidden" id="appointment-date" value="">
                                 <div id="appointment-calendar-root"></div>
@@ -2232,7 +2274,7 @@ async function viewServiceDetail(container) {
 
         window.submitFinalBooking = async (svcId, category) => {
             if (!localStorage.getItem('token')) {
-                showToast("Rezervasyon yapabilmek için giriş yapmalısınız.", "error");
+                showToast(t('toast.login_to_book'), "error");
                 setTimeout(() => { window.location.hash = '#login'; }, 1500);
                 return;
             }
@@ -2247,13 +2289,13 @@ async function viewServiceDetail(container) {
                 payload.check_out = urlEnd;
                 payload.guests = { adults: document.getElementById('adults')?.value || 1 };
             } else {
-                if (!selectedSlotId) return showToast("Lütfen bir saat seçin.", "error");
+                if (!selectedSlotId) return showToast(t('toast.pick_time'), "error");
                 payload.time_slot_id = selectedSlotId;
             }
 
             try {
                 await API.customer.createReservation(payload);
-                showToast("Rezervasyon başarıyla oluşturuldu.");
+                showToast(t('toast.reservation_created'));
                 window.location.hash = '#reservations';
             } catch (err) { showToast(err.message, 'error'); }
         };
@@ -2311,7 +2353,7 @@ async function viewServiceDetail(container) {
                         <span>${title}</span>
                         <button type="button" class="btn btn-sm btn-outline" onclick="window._shiftDetailApptMonth(1)">›</button>
                     </div>
-                    <div class="inline-cal-weekdays">${['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((x) => `<div>${x}</div>`).join('')}</div>
+                    <div class="inline-cal-weekdays">${[t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat'),t('common.day_sun')].map((x) => `<div>${x}</div>`).join('')}</div>
                     <div class="inline-cal-grid">${gridHtml}</div>
                 `;
             };
@@ -2428,7 +2470,7 @@ async function viewResetPassword(container) {
         const confirm = document.getElementById('reset-password-confirm').value;
         
         if (password !== confirm) {
-            showToast('Şifreler eşleşmiyor', 'error');
+            showToast(t('auth.password_mismatch'), 'error');
             return;
         }
         
@@ -2438,12 +2480,12 @@ async function viewResetPassword(container) {
         
         try {
             await API.auth.resetPassword(token, password);
-            showToast('Şifreniz başarıyla güncellendi');
+            showToast(t('profile.password_changed'));
             setTimeout(() => window.location.hash = '#login', 2000);
         } catch (err) { 
             showToast(err.message, 'error');
             btn.disabled = false;
-            btn.textContent = 'Şifreyi Güncelle';
+            btn.textContent = t('auth.reset_btn');
         }
     };
 }
@@ -2770,13 +2812,13 @@ async function viewMyReservations(container) {
             document.getElementById('review-form').onsubmit = async (e) => {
                 e.preventDefault();
                 const rating = document.getElementById('review-rating').value;
-                if (!rating) return showToast('Lütfen puan seçin.', 'error');
+                if (!rating) return showToast(t('rev.pick_rating'), 'error');
                 try {
                     await API.reviews.create(reservationId, {
                         rating: parseInt(rating),
                         comment: document.getElementById('review-comment').value
                     });
-                    showToast('Yorumunuz alındı, teşekkürler!');
+                    showToast(t('rev.thanks'));
                     closeModal();
                 } catch (err) { showToast(err.message, 'error'); }
             };
@@ -2785,17 +2827,28 @@ async function viewMyReservations(container) {
 }
 
 // --- Shared SuperAdmin Layout ---
-const SUPERADMIN_TABS = [
-    { hash: '#superadmin-stats',        label: 'İstatistikler' },
-    { hash: '#superadmin-businesses',   label: 'İşletmeler' },
-    { hash: '#superadmin-users',        label: 'Kullanıcılar' },
-    { hash: '#superadmin-logs',         label: 'Günlükler' },
-];
+function getSuperadminTabs() {
+    return [
+        { hash: '#superadmin-stats',        label: t('sa.menu.stats') },
+        { hash: '#superadmin-businesses',   label: t('sa.menu.businesses') },
+        { hash: '#superadmin-users',        label: t('sa.menu.users') },
+        { hash: '#superadmin-logs',         label: t('sa.menu.logs') },
+    ];
+}
+const SUPERADMIN_TABS = new Proxy([], {
+    get(_, prop) {
+        if (prop === Symbol.iterator || prop === 'length' || /^\d+$/.test(prop) || prop === 'map' || prop === 'forEach') {
+            const arr = getSuperadminTabs();
+            return typeof arr[prop] === 'function' ? arr[prop].bind(arr) : arr[prop];
+        }
+        return undefined;
+    }
+});
 
 function renderSuperAdminShell(container, activeHash, title, innerHtml, extraBtn = '') {
-    const tabs = SUPERADMIN_TABS.map(t => {
-        const isActive = t.hash === activeHash;
-        return `<a href="${t.hash}" class="admin-tab${isActive ? ' active' : ''}">${t.label}</a>`;
+    const tabs = getSuperadminTabs().map(tab => {
+        const isActive = tab.hash === activeHash;
+        return `<a href="${tab.hash}" class="admin-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
     }).join('');
 
     container.innerHTML = `
@@ -2817,18 +2870,29 @@ function renderSuperAdminShell(container, activeHash, title, innerHtml, extraBtn
 }
 
 // --- Shared Business Owner Layout ---
-const BUSINESS_TABS = [
-    { hash: '#business-dashboard',    label: 'İstatistikler' },
-    { hash: '#business-services',     label: 'Hizmetler' },
-    { hash: '#business-reservations', label: 'Rezervasyonlar' },
-    { hash: '#business-staff',        label: 'Personel' },
-    { hash: '#business-settings',     label: 'Ayarlar' },
-];
+function getBusinessTabs() {
+    return [
+        { hash: '#business-dashboard',    label: t('bo.menu.dashboard') },
+        { hash: '#business-services',     label: t('bo.menu.services') },
+        { hash: '#business-reservations', label: t('bo.menu.reservations') },
+        { hash: '#business-staff',        label: t('bo.menu.staff') },
+        { hash: '#business-settings',     label: t('bo.menu.settings') },
+    ];
+}
+const BUSINESS_TABS = new Proxy([], {
+    get(_, prop) {
+        if (prop === Symbol.iterator || prop === 'length' || /^\d+$/.test(prop) || prop === 'map' || prop === 'forEach') {
+            const arr = getBusinessTabs();
+            return typeof arr[prop] === 'function' ? arr[prop].bind(arr) : arr[prop];
+        }
+        return undefined;
+    }
+});
 
 function renderBusinessShell(container, activeHash, title, innerHtml, extraBtn = '') {
-    const tabs = BUSINESS_TABS.map(t => {
-        const isActive = t.hash === activeHash;
-        return `<a href="${t.hash}" class="admin-tab${isActive ? ' active' : ''}">${t.label}</a>`;
+    const tabs = getBusinessTabs().map(tab => {
+        const isActive = tab.hash === activeHash;
+        return `<a href="${tab.hash}" class="admin-tab${isActive ? ' active' : ''}">${tab.label}</a>`;
     }).join('');
 
     container.innerHTML = `
@@ -2852,23 +2916,23 @@ function renderBusinessShell(container, activeHash, title, innerHtml, extraBtn =
 // --- SuperAdmin Views ---
 
 async function viewSuperAdminStats(container) {
-    renderSuperAdminShell(container, '#superadmin-stats', 'Platform İstatistikleri', `
+    renderSuperAdminShell(container, '#superadmin-stats', t('sa.title.stats'), `
         <div id="stats-overview" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-            <div class="loading-row">Yükleniyor...</div>
+            <div class="loading-row">${t('common.loading_generic')}</div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
             <div class="service-card" style="padding: 2rem;">
-                <h3 style="margin-bottom: 1.5rem;">Aylık Rezervasyon Trendi</h3>
+                <h3 style="margin-bottom: 1.5rem;">${t('sa.stats.monthly_trend')}</h3>
                 <canvas id="monthly-chart"></canvas>
             </div>
             <div class="service-card" style="padding: 2rem;">
-                <h3 style="margin-bottom: 1.5rem;">Kategori Dağılımı</h3>
+                <h3 style="margin-bottom: 1.5rem;">${t('sa.stats.category_dist')}</h3>
                 <canvas id="category-chart"></canvas>
             </div>
         </div>
         <div class="service-card" style="padding: 2rem;">
-            <h3 style="margin-bottom: 1.5rem;">En Popüler 5 Hizmet</h3>
-            <div id="top-services-list" class="loading-row">Yükleniyor...</div>
+            <h3 style="margin-bottom: 1.5rem;">${t('sa.stats.top5_services')}</h3>
+            <div id="top-services-list" class="loading-row">${t('common.loading_generic')}</div>
         </div>
     `);
 
@@ -2881,12 +2945,12 @@ async function viewSuperAdminStats(container) {
         ]);
 
         const statCards = [
-            { label: 'Toplam Rezervasyon', value: overview.total_reservations },
-            { label: 'Beklemede',          value: overview.pending },
-            { label: 'Onaylandı',          value: overview.approved },
-            { label: 'Reddedildi',         value: overview.rejected },
-            { label: 'Kullanıcı',          value: overview.total_users },
-            { label: 'İşletme',            value: overview.total_businesses }
+            { label: t('sa.stats.total_reservations'), value: overview.total_reservations },
+            { label: t('status.pending'),               value: overview.pending },
+            { label: t('status.approved'),              value: overview.approved },
+            { label: t('status.rejected'),              value: overview.rejected },
+            { label: t('sa.stats.total_users'),         value: overview.total_users },
+            { label: t('sa.stats.total_businesses'),    value: overview.total_businesses }
         ];
         document.getElementById('stats-overview').innerHTML = statCards.map(s => `
             <div class="service-card stat-card">
@@ -2901,7 +2965,7 @@ async function viewSuperAdminStats(container) {
             data: {
                 labels: monthly.map(m => m.month),
                 datasets: [{
-                    label: 'Rezervasyon',
+                    label: t('sa.stats.reservation_label'),
                     data: monthly.map(m => m.count),
                     backgroundColor: 'rgba(197, 160, 89, 0.75)',
                     borderColor: 'var(--accent)',
@@ -2916,7 +2980,7 @@ async function viewSuperAdminStats(container) {
         new Chart(catCtx, {
             type: 'doughnut',
             data: {
-                labels: byCategory.map(c => c.category === 'hotel' ? 'Otel' : 'Randevu'),
+                labels: byCategory.map(c => c.category === 'hotel' ? t('sa.cat.hotel') : t('sa.cat.appointment')),
                 datasets: [{
                     data: byCategory.map(c => c.count),
                     backgroundColor: ['#c5a059', '#1a1a1a'],
@@ -2938,7 +3002,7 @@ async function viewSuperAdminStats(container) {
                 </div>
                 <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">${s.reservation_count}</span>
             </div>
-        `).join('') || '<p style="color:var(--text-muted);">Henüz rezervasyon yok.</p>';
+        `).join('') || `<p style="color:var(--text-muted);">${t('sa.empty.no_reservations')}</p>`;
 
     } catch (e) {
         showToast(e.message, 'error');
@@ -2946,15 +3010,15 @@ async function viewSuperAdminStats(container) {
 }
 
 async function viewSuperAdminBusinesses(container) {
-    renderSuperAdminShell(container, '#superadmin-businesses', 'İşletme Yönetimi',
+    renderSuperAdminShell(container, '#superadmin-businesses', t('sa.title.businesses'),
         `
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-            <input id="sa-biz-search" type="search" placeholder="İşletme ara (ad)..." style="flex:1; min-width: 240px; padding:0.65rem 0.85rem; border-radius:10px; border:1px solid #e5e7eb;">
+            <input id="sa-biz-search" type="search" placeholder="${t('sa.search_business_ph')}" style="flex:1; min-width: 240px; padding:0.65rem 0.85rem; border-radius:10px; border:1px solid #e5e7eb;">
             <button class="btn btn-outline btn-sm" onclick="window.clearSuperAdminBizSearch()">Temizle</button>
         </div>
         <div id="admin-businesses-list" class="loading-row">Yükleniyor...</div>
         `,
-        `<button class="btn btn-primary" onclick="window.showBusinessFormModal()">+ Yeni İşletme Ekle</button>`
+        `<button class="btn btn-primary" onclick="window.showBusinessFormModal()">${t('sa.btn.new_business')}</button>`
     );
     const list = document.getElementById('admin-businesses-list');
     const state = window._saBizState || { page: 1, search: '' };
@@ -2982,18 +3046,18 @@ async function viewSuperAdminBusinesses(container) {
                         Toplam: <strong>${Number(data.total || 0)}</strong> işletme • Sayfa <strong>${cur}</strong>/<strong>${pages}</strong>
                     </div>
                     <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-                        <button class="btn btn-outline btn-sm" ${cur <= 1 ? 'disabled' : ''} onclick="window.loadSuperAdminBusinessesPage(${cur - 1})">Önceki</button>
+                        <button class="btn btn-outline btn-sm" ${cur <= 1 ? 'disabled' : ''} onclick="window.loadSuperAdminBusinessesPage(${cur - 1})">${t('btn.prev')}</button>
                         <select class="pretty-select" style="width:auto; min-width:120px;" onchange="window.loadSuperAdminBusinessesPage(this.value)">
                             ${Array.from({ length: pages }, (_, i) => i + 1).map(p => `<option value="${p}" ${p === cur ? 'selected' : ''}>Sayfa ${p}</option>`).join('')}
                         </select>
-                        <button class="btn btn-outline btn-sm" ${cur >= pages ? 'disabled' : ''} onclick="window.loadSuperAdminBusinessesPage(${cur + 1})">Sonraki</button>
+                        <button class="btn btn-outline btn-sm" ${cur >= pages ? 'disabled' : ''} onclick="window.loadSuperAdminBusinessesPage(${cur + 1})">${t('btn.next')}</button>
                     </div>
                 </div>
             ` : '';
 
             list.innerHTML = `
                 <table class="admin-table">
-                    <thead><tr><th>Ad</th><th>Tür</th><th>Konum</th><th>İşlemler</th></tr></thead>
+                    <thead><tr><th>${t('sa.col.name')}</th><th>${t('sa.col.type')}</th><th>${t('sa.col.location')}</th><th>${t('sa.col.actions')}</th></tr></thead>
                     <tbody>
                         ${(data.businesses || []).map(b => `
                             <tr>
@@ -3002,8 +3066,8 @@ async function viewSuperAdminBusinesses(container) {
                                 <td>${b.il ? b.il + (b.ilce ? ', ' + b.ilce : '') : (b.address || '-')}</td>
                                 <td>
                                     <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
-                                        <button class="btn btn-outline btn-sm" onclick="window.showBusinessFormModal(${JSON.stringify(b).replace(/\"/g, '&quot;')})">Düzenle</button>
-                                        <button class="btn btn-danger btn-sm" onclick="window.deleteBusiness(${b.id})">Sil</button>
+                                        <button class="btn btn-outline btn-sm" onclick="window.showBusinessFormModal(${JSON.stringify(b).replace(/\"/g, '&quot;')})">${t('btn.edit')}</button>
+                                        <button class="btn btn-danger btn-sm" onclick="window.deleteBusiness(${b.id})">${t('btn.delete')}</button>
                                     </div>
                                 </td>
                             </tr>
@@ -3035,10 +3099,10 @@ async function viewSuperAdminBusinesses(container) {
 }
 
 async function viewSuperAdminUsers(container) {
-    renderSuperAdminShell(container, '#superadmin-users', 'Sistem Kullanıcıları',
+    renderSuperAdminShell(container, '#superadmin-users', t('sa.title.users'),
         `
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-            <input id="sa-user-search" type="search" placeholder="Kullanıcı ara (ad/e-posta)..." style="flex:1; min-width: 240px; padding:0.65rem 0.85rem; border-radius:10px; border:1px solid #e5e7eb;">
+            <input id="sa-user-search" type="search" placeholder="${t('sa.search_user_ph')}" style="flex:1; min-width: 240px; padding:0.65rem 0.85rem; border-radius:10px; border:1px solid #e5e7eb;">
             <button class="btn btn-outline btn-sm" onclick="window.clearSuperAdminUserSearch()">Temizle</button>
         </div>
         <div id="user-list" class="loading-row">Yükleniyor...</div>
@@ -3070,18 +3134,18 @@ async function viewSuperAdminUsers(container) {
                         Toplam: <strong>${Number(data.total || 0)}</strong> kullanıcı • Sayfa <strong>${cur}</strong>/<strong>${pages}</strong>
                     </div>
                     <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-                        <button class="btn btn-outline btn-sm" ${cur <= 1 ? 'disabled' : ''} onclick="window.loadSuperAdminUsersPage(${cur - 1})">Önceki</button>
+                        <button class="btn btn-outline btn-sm" ${cur <= 1 ? 'disabled' : ''} onclick="window.loadSuperAdminUsersPage(${cur - 1})">${t('btn.prev')}</button>
                         <select class="pretty-select" style="width:auto; min-width:120px;" onchange="window.loadSuperAdminUsersPage(this.value)">
                             ${Array.from({ length: pages }, (_, i) => i + 1).map(p => `<option value="${p}" ${p === cur ? 'selected' : ''}>Sayfa ${p}</option>`).join('')}
                         </select>
-                        <button class="btn btn-outline btn-sm" ${cur >= pages ? 'disabled' : ''} onclick="window.loadSuperAdminUsersPage(${cur + 1})">Sonraki</button>
+                        <button class="btn btn-outline btn-sm" ${cur >= pages ? 'disabled' : ''} onclick="window.loadSuperAdminUsersPage(${cur + 1})">${t('btn.next')}</button>
                     </div>
                 </div>
             ` : '';
 
             root.innerHTML = `
                 <table class="admin-table">
-                    <thead><tr><th>Ad</th><th>E-posta</th><th>Rol</th><th>İşletme ID</th><th>İşlemler</th></tr></thead>
+                    <thead><tr><th>${t('sa.col.name')}</th><th>${t('sa.col.email')}</th><th>${t('sa.col.role')}</th><th>${t('sa.col.affected')}</th><th>${t('sa.col.actions')}</th></tr></thead>
                     <tbody>${(data.users || []).map(u => `
                         <tr>
                             <td>${u.name}</td>
@@ -3090,8 +3154,8 @@ async function viewSuperAdminUsers(container) {
                             <td>${u.business_id || '-'}</td>
                             <td>
                                 <div style="display:flex;gap:0.4rem;">
-                                    <button class="btn btn-outline btn-sm" onclick="window.showEditUserModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">Düzenle</button>
-                                    <button class="btn btn-danger btn-sm" onclick="window.deleteUser(${u.id})">Sil</button>
+                                    <button class="btn btn-outline btn-sm" onclick="window.showEditUserModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">${t('btn.edit')}</button>
+                                    <button class="btn btn-danger btn-sm" onclick="window.deleteUser(${u.id})">${t('btn.delete')}</button>
                                 </div>
                             </td>
                         </tr>
@@ -3122,10 +3186,10 @@ async function viewSuperAdminUsers(container) {
 }
 
 async function viewSuperAdminLogs(container) {
-    renderSuperAdminShell(container, '#superadmin-logs', 'Sistem Günlükleri',
+    renderSuperAdminShell(container, '#superadmin-logs', t('sa.title.logs'),
         `
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
-            <input id="sa-log-search" type="search" placeholder="Log ara (işlem/kullanıcı/içerik)..." style="flex:1; min-width: 240px; padding:0.65rem 0.85rem; border-radius:10px; border:1px solid #e5e7eb;">
+            <input id="sa-log-search" type="search" placeholder="${t('sa.search_log_ph')}" style="flex:1; min-width: 240px; padding:0.65rem 0.85rem; border-radius:10px; border:1px solid #e5e7eb;">
             <button class="btn btn-outline btn-sm" onclick="window.clearSuperAdminLogSearch()">Temizle</button>
         </div>
         <div style="font-size:0.8rem; color: var(--text-muted); margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--accent);">
@@ -3161,18 +3225,18 @@ async function viewSuperAdminLogs(container) {
                         Toplam: <strong>${Number(data.total || 0)}</strong> kayıt • Sayfa <strong>${cur}</strong>/<strong>${pages}</strong>
                     </div>
                     <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-                        <button class="btn btn-outline btn-sm" ${cur <= 1 ? 'disabled' : ''} onclick="window.loadSuperAdminLogsPage(${cur - 1})">Önceki</button>
+                        <button class="btn btn-outline btn-sm" ${cur <= 1 ? 'disabled' : ''} onclick="window.loadSuperAdminLogsPage(${cur - 1})">${t('btn.prev')}</button>
                         <select class="pretty-select" style="width:auto; min-width:120px;" onchange="window.loadSuperAdminLogsPage(this.value)">
                             ${Array.from({ length: pages }, (_, i) => i + 1).map(p => `<option value="${p}" ${p === cur ? 'selected' : ''}>Sayfa ${p}</option>`).join('')}
                         </select>
-                        <button class="btn btn-outline btn-sm" ${cur >= pages ? 'disabled' : ''} onclick="window.loadSuperAdminLogsPage(${cur + 1})">Sonraki</button>
+                        <button class="btn btn-outline btn-sm" ${cur >= pages ? 'disabled' : ''} onclick="window.loadSuperAdminLogsPage(${cur + 1})">${t('btn.next')}</button>
                     </div>
                 </div>
             ` : '';
 
             root.innerHTML = `
                 <table class="admin-table">
-                    <thead><tr><th>Zaman</th><th>İşlem</th><th>Kullanıcı ID</th></tr></thead>
+                    <thead><tr><th>${t('sa.col.timestamp')}</th><th>${t('sa.col.action')}</th><th>${t('sa.col.user')}</th></tr></thead>
                     <tbody>${(data.logs || []).map(l => `
                         <tr>
                             <td style="font-size:0.82rem;color:#666;">${l.timestamp}</td>
@@ -3236,7 +3300,7 @@ window.showEditUserModal = (u) => {
         if (pass) payload.password = pass;
         try {
             await API.superadmin.updateUser(u.id, payload);
-            showToast('Kullanıcı güncellendi.');
+            showToast(t('toast.user_updated'));
             closeModal();
             if (typeof window.loadSuperAdminUsersPage === 'function') {
                 window.loadSuperAdminUsersPage(window._saUsersState?.page || 1);
@@ -3248,10 +3312,10 @@ window.showEditUserModal = (u) => {
 };
 
 window.deleteUser = async (id) => {
-    if (!confirm('Kullanıcıyı silmek istediğinize emin misiniz?')) return;
+    if (!confirm(t('confirm.delete_user'))) return;
     try {
         await API.superadmin.deleteUser(id);
-        showToast('Kullanıcı silindi.');
+        showToast(t('toast.user_deleted'));
         if (typeof window.loadSuperAdminUsersPage === 'function') {
             window.loadSuperAdminUsersPage(window._saUsersState?.page || 1);
         } else {
@@ -3264,7 +3328,7 @@ window.deleteUser = async (id) => {
 
 window.showBusinessFormModal = async (biz = null) => {
     const isEdit = !!biz;
-    const title = isEdit ? 'İşletme Düzenle' : 'Yeni İşletme Ekle';
+    const title = isEdit ? t('biz_form.edit_title') : t('biz_form.new_title');
 
     const locations = await loadLocationData();
     const ilOptions = locations.iller.map(il => 
@@ -3274,56 +3338,56 @@ window.showBusinessFormModal = async (biz = null) => {
     const html = `
         <form id="biz-form" style="max-height: 70vh; overflow-y: auto; padding-right: 0.5rem;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group"><label>İşletme Adı</label><input type="text" id="biz-name" value="${biz?.name || ''}" required></div>
-                <div class="form-group"><label>Tür</label>
+                <div class="form-group"><label>${t('biz_form.name')}</label><input type="text" id="biz-name" value="${biz?.name || ''}" required></div>
+                <div class="form-group"><label>${t('sa.col.type')}</label>
                     <select id="biz-type" class="pretty-select">
-                        <option value="konaklama" ${biz?.type === 'konaklama' ? 'selected' : ''}>Konaklama</option>
-                        <option value="yeme-icme" ${biz?.type === 'yeme-icme' ? 'selected' : ''}>Yeme & İçme</option>
-                        <option value="guzellik" ${biz?.type === 'guzellik' ? 'selected' : ''}>Güzellik & Bakım</option>
-                        <option value="saglik" ${biz?.type === 'saglik' ? 'selected' : ''}>Sağlık & Wellness</option>
-                        <option value="spor" ${biz?.type === 'spor' ? 'selected' : ''}>Spor & Aktivite</option>
-                        <option value="etkinlik" ${biz?.type === 'etkinlik' ? 'selected' : ''}>Etkinlik & Organizasyon</option>
-                        <option value="hizmet" ${biz?.type === 'hizmet' ? 'selected' : ''}>Hizmet & Servis</option>
-                        <option value="egitim" ${biz?.type === 'egitim' ? 'selected' : ''}>Eğitim</option>
+                        <option value="konaklama" ${biz?.type === 'konaklama' ? 'selected' : ''}>${t('biz.category.konaklama')}</option>
+                        <option value="yeme-icme" ${biz?.type === 'yeme-icme' ? 'selected' : ''}>${t('biz.category.yeme-icme')}</option>
+                        <option value="guzellik" ${biz?.type === 'guzellik' ? 'selected' : ''}>${t('biz.category.guzellik')}</option>
+                        <option value="saglik" ${biz?.type === 'saglik' ? 'selected' : ''}>${t('biz.category.saglik')}</option>
+                        <option value="spor" ${biz?.type === 'spor' ? 'selected' : ''}>${t('biz.category.spor')}</option>
+                        <option value="etkinlik" ${biz?.type === 'etkinlik' ? 'selected' : ''}>${t('biz.category.etkinlik')}</option>
+                        <option value="hizmet" ${biz?.type === 'hizmet' ? 'selected' : ''}>${t('biz.category.hizmet')}</option>
+                        <option value="egitim" ${biz?.type === 'egitim' ? 'selected' : ''}>${t('biz.category.egitim')}</option>
                     </select>
                 </div>
             </div>
-            <div class="form-group"><label>Açıklama</label><textarea id="biz-desc" rows="2">${biz?.description || ''}</textarea></div>
+            <div class="form-group"><label>${t('biz_form.description')}</label><textarea id="biz-desc" rows="2">${biz?.description || ''}</textarea></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group"><label>İl</label>
+                <div class="form-group"><label>${t('home.filter_city')}</label>
                     <select id="biz-il" class="pretty-select" onchange="window.updateBizIlceSelect()">
-                        <option value="">Seçiniz</option>
+                        <option value="">${t('common.please_select')}</option>
                         ${ilOptions}
                     </select>
                 </div>
-                <div class="form-group"><label>İlçe</label>
+                <div class="form-group"><label>${t('home.filter_district')}</label>
                     <select id="biz-ilce" class="pretty-select">
-                        <option value="">Önce il seçin</option>
+                        <option value="">${t('biz_form.pick_city_first')}</option>
                     </select>
                 </div>
             </div>
-            <div class="form-group"><label>Açık Adres</label><input type="text" id="biz-address" value="${biz?.address || ''}" placeholder="Mahalle, cadde, bina no..."></div>
-            <div class="form-group"><label>Görsel URL</label><input type="text" id="biz-image" value="${biz?.image_url || ''}"></div>
+            <div class="form-group"><label>${t('biz_form.address')}</label><input type="text" id="biz-address" value="${biz?.address || ''}" placeholder="${t('biz_form.address_ph')}"></div>
+            <div class="form-group"><label>${t('biz_form.image_url')}</label><input type="text" id="biz-image" value="${biz?.image_url || ''}"></div>
             ${!isEdit ? `
                 <hr style="margin: 1rem 0; border: none; border-top: 1px solid #eee;">
-                <p style="font-weight: 600; margin-bottom: 0.8rem; font-size: 0.9rem;">İşletme Sahibi (Opsiyonel)</p>
+                <p style="font-weight: 600; margin-bottom: 0.8rem; font-size: 0.9rem;">${t('biz_form.owner_optional')}</p>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
-                    <div class="form-group"><label>Ad Soyad</label><input type="text" id="owner-name"></div>
-                    <div class="form-group"><label>E-posta</label><input type="email" id="owner-email"></div>
+                    <div class="form-group"><label>${t('auth.name')}</label><input type="text" id="owner-name"></div>
+                    <div class="form-group"><label>${t('auth.email')}</label><input type="email" id="owner-email"></div>
                 </div>
                 <div class="form-group">
-                    <label>Cep telefonu</label>
+                    <label>${t('auth.phone_mobile')}</label>
                     <div class="phone-input-row">
                         <span class="phone-input-prefix" aria-hidden="true">+90</span>
                         <input type="tel" id="owner-phone" class="phone-input-field" inputmode="numeric" autocomplete="tel-national" placeholder="5XX XXX XX XX">
                     </div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
-                    <div class="form-group"><label>Şifre</label><input type="password" id="owner-pass"></div>
-                    <div class="form-group"><label>Şifre tekrar</label><input type="password" id="owner-pass2"></div>
+                    <div class="form-group"><label>${t('auth.password')}</label><input type="password" id="owner-pass"></div>
+                    <div class="form-group"><label>${t('auth.password_confirm')}</label><input type="password" id="owner-pass2"></div>
                 </div>
             ` : ''}
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">${isEdit ? 'Güncelle' : 'Ekle'}</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">${isEdit ? t('btn.save') : t('btn.add')}</button>
         </form>
     `;
 
@@ -3355,15 +3419,15 @@ window.showBusinessFormModal = async (biz = null) => {
             const anyOwner = !!(ownerName || ownerEmail || ownerPass || ownerPass2 || (ownerPhoneEl && parseProfilePhoneToDigits(ownerPhoneEl.value)));
             if (anyOwner) {
                 if (!ownerName || !ownerEmail || !ownerPass) {
-                    showToast('İşletme sahibi için ad, e-posta ve şifre zorunludur.', 'error');
+                    showToast(t('biz_form.owner_required'), 'error');
                     return;
                 }
                 if (ownerPass !== ownerPass2) {
-                    showToast('İşletme sahibi şifreleri eşleşmiyor', 'error');
+                    showToast(t('toast.owner_pass_mismatch'), 'error');
                     return;
                 }
                 if (!ownerPhone) {
-                    showToast('İşletme sahibi için geçerli cep telefonu girin (05XX…)', 'error');
+                    showToast(t('toast.owner_phone_invalid'), 'error');
                     return;
                 }
                 data.owner_name = ownerName;
@@ -3375,7 +3439,7 @@ window.showBusinessFormModal = async (biz = null) => {
         try {
             if (isEdit) await API.superadmin.updateBusiness(biz.id, data);
             else await API.superadmin.createBusiness(data);
-            showToast("İşletme başarıyla kaydedildi.");
+            showToast(t('toast.business_saved'));
             window.closeModal();
             if (typeof window.loadSuperAdminBusinessesPage === 'function') {
                 window.loadSuperAdminBusinessesPage(window._saBizState?.page || 1);
@@ -3405,10 +3469,10 @@ window.updateBizIlceSelect = async (selectedIlce = null) => {
 };
 
 window.deleteBusiness = async (id) => {
-    if (!confirm("İşletmeyi silmek istediğinize emin misiniz? Bağlı tüm hizmetler etkilenebilir.")) return;
+    if (!confirm(t('confirm.delete_business_long'))) return;
     try {
         await API.superadmin.deleteBusiness(id);
-        showToast("İşletme silindi.");
+        showToast(t('toast.business_deleted'));
         if (typeof window.loadSuperAdminBusinessesPage === 'function') {
             window.loadSuperAdminBusinessesPage(window._saBizState?.page || 1);
         } else {
@@ -3436,7 +3500,7 @@ async function viewBusinessDashboard(container) {
     };
     const safe = (v) => (v == null ? '' : String(v));
 
-    renderBusinessShell(container, '#business-dashboard', 'İşletme Paneli', `
+    renderBusinessShell(container, '#business-dashboard', t('bo.title.dashboard'), `
         <div class="biz-dashboard">
             <div class="biz-dashboard__top">
                 <div class="biz-dashboard__kpis" id="biz-kpis">
@@ -3639,7 +3703,7 @@ async function viewBusinessDashboard(container) {
             recentEl.innerHTML = `
                 <div class="res-table-wrap">
                     <table class="admin-table" style="margin-top:0;">
-                        <thead><tr><th>Müşteri</th><th>Hizmet</th><th>Tarih</th><th>Durum</th></tr></thead>
+                        <thead><tr><th>${t('bo.col.customer')}</th><th>${t('bo.col.service')}</th><th>${t('bo.col.date')}</th><th>${t('bo.col.status')}</th></tr></thead>
                         <tbody>
                             ${recent.map(r => `
                                 <tr>
@@ -3667,35 +3731,37 @@ async function viewBusinessDashboard(container) {
 }
 
 async function viewBusinessServices(container) {
-    renderBusinessShell(container, '#business-services', 'Hizmet Yönetimi',
-        `<div id="biz-services-list" class="loading-row">Yükleniyor...</div>`,
-        `<button class="btn btn-primary" onclick="window.showBizServiceFormModal()">+ Yeni Hizmet Ekle</button>`
+    renderBusinessShell(container, '#business-services', t('bo.title.services'),
+        `<div id="biz-services-list" class="loading-row">${t('common.loading_generic')}</div>`,
+        `<button class="btn btn-primary" onclick="window.showBizServiceFormModal()">${t('bo.btn.add_service')}</button>`
     );
     window.loadBusinessServices();
 }
 
 window.loadBusinessServices = async () => {
     const list = document.getElementById('biz-services-list');
+    const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+    const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
     try {
         const services = await API.business.getServices();
         list.innerHTML = `
             <table class="admin-table">
-                <thead><tr><th>Ad</th><th>Kategori</th><th>Fiyat</th><th>İşlemler</th></tr></thead>
+                <thead><tr><th>${t('sa.col.name')}</th><th>${t('bo.col.category')}</th><th>${t('bo.col.price')}</th><th>${t('sa.col.actions')}</th></tr></thead>
                 <tbody>
                     ${services.map(s => `
                         <tr>
                             <td><strong>${s.name}</strong></td>
-                            <td><span class="badge" style="background:#eee">${s.category === 'hotel' ? 'Oda' : 'Randevu'}</span></td>
-                            <td>${s.price ? `${s.price.toLocaleString('tr-TR')} ₺` : '-'}</td>
+                            <td><span class="badge" style="background:#eee">${s.category === 'hotel' ? t('st.cat.room') : t('sa.cat.appointment')}</span></td>
+                            <td>${s.price ? `${s.price.toLocaleString(numberLocale)} ₺` : '-'}</td>
                             <td>
                                 <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
                                     ${s.category === 'hotel' 
-                                        ? `<button class="btn btn-outline btn-sm" onclick="window.showAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">Rezervasyon Tarihleri</button>`
+                                        ? `<button class="btn btn-outline btn-sm" onclick="window.showAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">${t('st.reservation_dates')}</button>`
                                         : `<button class="btn btn-outline btn-sm" onclick="window.showApptAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">Müsaitlik Oluştur</button>
                                            <button class="btn btn-outline btn-sm" onclick="window.showSlotsModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', false)">Slotlar</button>`
                                     }
-                                    <button class="btn btn-outline btn-sm" onclick="window.showBizServiceFormModal(${JSON.stringify(s).replace(/"/g, '&quot;')})">Düzenle</button>
-                                    <button class="btn btn-danger btn-sm" onclick="window.deleteBizService(${s.id})">Sil</button>
+                                    <button class="btn btn-outline btn-sm" onclick="window.showBizServiceFormModal(${JSON.stringify(s).replace(/"/g, '&quot;')})">${t('btn.edit')}</button>
+                                    <button class="btn btn-danger btn-sm" onclick="window.deleteBizService(${s.id})">${t('btn.delete')}</button>
                                 </div>
                             </td>
                         </tr>
@@ -3748,7 +3814,7 @@ window.showBizServiceFormModal = async (service = null) => {
         try {
             if (isEdit) await API.business.updateService(service.id, payload);
             else await API.business.createService(payload);
-            showToast("Başarıyla kaydedildi");
+            showToast(t('toast.saved_success'));
             closeModal();
             loadBusinessServices();
         } catch (err) { showToast(err.message, 'error'); }
@@ -3783,7 +3849,7 @@ window.showSlotsModal = async (serviceId, serviceName, isHotel = false) => {
 
 window.loadHotelSlotsForModal = async (serviceId) => {
     const grid = document.getElementById('slots-grid');
-    grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1;">Yükleniyor...</div>';
+    grid.innerHTML = `<div class="loading-row" style="grid-column:1/-1;">${t('common.loading_generic')}</div>`;
 
     try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -3799,7 +3865,7 @@ window.loadHotelSlotsForModal = async (serviceId) => {
             return;
         }
 
-        const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+        const dayNames = [t('common.day_sun'),t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat')];
         grid.innerHTML = slots.slice(0, 30).map(s => {
             const d = new Date(s.date);
             const dayName = dayNames[d.getDay()];
@@ -3820,7 +3886,7 @@ window.loadHotelSlotsForModal = async (serviceId) => {
 window.loadSlotsForModal = async (serviceId) => {
     const date = document.getElementById('slot-date-filter').value;
     const grid = document.getElementById('slots-grid');
-    grid.innerHTML = '<div class="loading-row">Yükleniyor...</div>';
+    grid.innerHTML = `<div class="loading-row">${t('common.loading_generic')}</div>`;
 
     try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -3855,7 +3921,7 @@ window.toggleSlotAvailability = async (slotId, serviceId, isHotel = false) => {
         } else {
             await API.staff.toggleSlot(slotId);
         }
-        showToast('Slot durumu güncellendi');
+        showToast(t('toast.slot_updated'));
         if (isHotel) {
             if (window._hotelAvailCtx && window._hotelAvailCtx.serviceId === serviceId) {
                 await window.openHotelAvailCalendar(serviceId, window._hotelAvailCtx.gridId);
@@ -3875,7 +3941,7 @@ window.generateBizSlots = async (id, category = 'appointment') => {
     if (!confirm(msg)) return;
     try {
         await API.business.generateSlots(id);
-        showToast("Müsaitlik oluşturuldu!");
+        showToast(t('toast.availability_created'));
     } catch (err) { showToast(err.message, 'error'); }
 };
 
@@ -3939,13 +4005,13 @@ window.showAvailabilityManager = async (serviceId, serviceName) => {
             <div class="loading-row">Yükleniyor...</div>
         </div>
         <p style="margin-top: 0.8rem; font-size: 0.8rem; color: #666;">
-            <span style="display:inline-block; width:12px; height:12px; background:#f0fdf4; border:1px solid #10b981; border-radius:3px; margin-right:4px;"></span> Müsait
-            <span style="display:inline-block; width:12px; height:12px; background:#fef2f2; border:1px solid #ef4444; border-radius:3px; margin-left:12px; margin-right:4px;"></span> Dolu
+            <span style="display:inline-block; width:12px; height:12px; background:#f0fdf4; border:1px solid #10b981; border-radius:3px; margin-right:4px;"></span> ${t('cal.available')}
+            <span style="display:inline-block; width:12px; height:12px; background:#fef2f2; border:1px solid #ef4444; border-radius:3px; margin-left:12px; margin-right:4px;"></span> ${t('cal.booked')}
             <span style="display:inline-block; width:12px; height:12px; background:#fff7ed; border:1px solid #f59e0b; border-radius:3px; margin-left:12px; margin-right:4px;"></span> Rezerve (kilitli)
         </p>
     `;
 
-    showModal(`${serviceName} - Rezervasyon Yapılabilir Tarihler`, html);
+    showModal(`${serviceName} - ${t('st.bookable_dates')}`, html);
     window.openHotelAvailCalendar(serviceId, 'hotel-calendar-grid');
 };
 
@@ -3955,7 +4021,7 @@ async function loadHotelCalendar(serviceId) {
     try {
         const slots = await API.business.getSlots(serviceId, '');
         
-        const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+        const dayNames = [t('common.day_sun'),t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat')];
         
         grid.innerHTML = dayNames.map(d => 
             `<div style="text-align:center; font-weight:600; padding:0.3rem; color:#666; font-size:0.75rem;">${d}</div>`
@@ -4021,12 +4087,12 @@ window.addAvailabilityRange = async (serviceId) => {
     const endDate = document.getElementById('avail-end').value;
 
     if (!startDate || !endDate) {
-        showToast("Lütfen başlangıç ve bitiş tarihi seçin.", "error");
+        showToast(t('toast.pick_start_end'), "error");
         return;
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-        showToast("Bitiş tarihi başlangıçtan önce olamaz.", "error");
+        showToast(t('toast.end_after_start'), "error");
         return;
     }
 
@@ -4052,7 +4118,7 @@ window.addAvailabilityRange = async (serviceId) => {
 };
 
 window.deleteBizService = async (id) => {
-    if (!confirm("Silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t('confirm.delete_generic'))) return;
     try {
         await API.business.deleteService(id);
         loadBusinessServices();
@@ -4060,7 +4126,7 @@ window.deleteBizService = async (id) => {
 };
 
 async function viewBusinessReservations(container) {
-    renderBusinessShell(container, '#business-reservations', 'Rezervasyonlar',
+    renderBusinessShell(container, '#business-reservations', t('bo.title.reservations'),
         `<div id="biz-res-list" class="loading-row">Yükleniyor...</div>`,
         `<button class="btn btn-primary" onclick="window.showManualReservationModal()">+ Manuel Rezervasyon</button>`
     );
@@ -4069,7 +4135,7 @@ async function viewBusinessReservations(container) {
         const data = await API.business.getReservations();
         document.getElementById('biz-res-list').innerHTML = `
             <table class="admin-table">
-                <thead><tr><th>Müşteri</th><th>İletişim</th><th>Hizmet</th><th>Tarih</th><th>Durum</th><th>İşlemler</th></tr></thead>
+                <thead><tr><th>${t('bo.col.customer')}</th><th>${t('bo.col.contact')}</th><th>${t('bo.col.service')}</th><th>${t('bo.col.date')}</th><th>${t('bo.col.status')}</th><th>${t('sa.col.actions')}</th></tr></thead>
                 <tbody>
                     ${data.reservations.map(r => `
                         <tr>
@@ -4086,8 +4152,8 @@ async function viewBusinessReservations(container) {
                             <td>
                                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                                 ${r.status === 'pending' ? `
-                                    <button class="btn btn-outline btn-sm" style="color:var(--success);border-color:var(--success);" onclick="window.bizUpdateResStatus(${r.id}, 'approved')">Onayla</button>
-                                    <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.bizUpdateResStatus(${r.id}, 'rejected')">Reddet</button>
+                                    <button class="btn btn-outline btn-sm" style="color:var(--success);border-color:var(--success);" onclick="window.bizUpdateResStatus(${r.id}, 'approved')">${t('btn.approve')}</button>
+                                    <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.bizUpdateResStatus(${r.id}, 'rejected')">${t('btn.reject')}</button>
                                 ` : ''}
                                 ${r.status === 'approved' ? `
                                     <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.bizCancelRes(${r.id})">İptal Et</button>
@@ -4110,16 +4176,16 @@ window.bizUpdateResStatus = async (id, status) => {
 };
 
 window.bizCancelRes = async (id) => {
-    if (!confirm('Onaylanan rezervasyon iptal edilsin mi?')) return;
+    if (!confirm(t('confirm.cancel_approved_reservation'))) return;
     try {
         await API.business.updateReservationStatus(id, 'rejected');
         viewBusinessReservations(document.getElementById('app-root'));
-        showToast('Rezervasyon iptal edildi.', 'success');
+        showToast(t('toast.reservation_cancelled'), 'success');
     } catch (e) { showToast(e.message, 'error'); }
 };
 
 async function viewBusinessStaff(container) {
-    renderBusinessShell(container, '#business-staff', 'Personel Yönetimi',
+    renderBusinessShell(container, '#business-staff', t('bo.title.staff'),
         `<div id="biz-staff-list" class="loading-row">Yükleniyor...</div>`,
         `<button class="btn btn-primary" onclick="window.showBizStaffFormModal()">+ Yeni Personel Ekle</button>`
     );
@@ -4132,7 +4198,7 @@ window.loadBusinessStaff = async () => {
         const staff = await API.business.getStaff();
         list.innerHTML = `
             <table class="admin-table">
-                <thead><tr><th>Ad</th><th>E-posta</th><th>Telefon</th><th>İşlemler</th></tr></thead>
+                <thead><tr><th>${t('sa.col.name')}</th><th>${t('sa.col.email')}</th><th>${t('bo.col.phone')}</th><th>${t('sa.col.actions')}</th></tr></thead>
                 <tbody>
                     ${staff.map(s => `
                         <tr>
@@ -4141,8 +4207,8 @@ window.loadBusinessStaff = async () => {
                             <td style="font-size:0.85rem;">${s.phone || '—'}</td>
                             <td>
                                 <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
-                                    <button class="btn btn-outline btn-sm" onclick="window.showBizStaffFormModal(${JSON.stringify(s).replace(/"/g, '&quot;')})">Düzenle</button>
-                                    <button class="btn btn-danger btn-sm" onclick="window.deleteBizStaff(${s.id})">Sil</button>
+                                    <button class="btn btn-outline btn-sm" onclick="window.showBizStaffFormModal(${JSON.stringify(s).replace(/"/g, '&quot;')})">${t('btn.edit')}</button>
+                                    <button class="btn btn-danger btn-sm" onclick="window.deleteBizStaff(${s.id})">${t('btn.delete')}</button>
                                 </div>
                             </td>
                         </tr>
@@ -4188,12 +4254,12 @@ window.showBizStaffFormModal = (staff = null) => {
         const pass = document.getElementById('bstaff-pass').value;
         const pass2El = document.getElementById('bstaff-pass2');
         if (!isEdit && pass2El && pass !== pass2El.value) {
-            showToast('Şifreler eşleşmiyor', 'error');
+            showToast(t('auth.password_mismatch'), 'error');
             return;
         }
         const phone = phoneInputToApiPayload(document.getElementById('bstaff-phone'));
         if (!phone) {
-            showToast('Geçerli bir cep telefonu girin (05XX…)', 'error');
+            showToast(t('auth.invalid_phone'), 'error');
             return;
         }
         payload.phone = phone;
@@ -4202,7 +4268,7 @@ window.showBizStaffFormModal = (staff = null) => {
         try {
             if (isEdit) await API.business.updateStaff(staff.id, payload);
             else await API.business.createStaff(payload);
-            showToast("Başarıyla kaydedildi");
+            showToast(t('toast.saved_success'));
             closeModal();
             loadBusinessStaff();
         } catch (err) { showToast(err.message, 'error'); }
@@ -4210,7 +4276,7 @@ window.showBizStaffFormModal = (staff = null) => {
 };
 
 window.deleteBizStaff = async (id) => {
-    if (!confirm("Personeli silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t('confirm.delete_staff'))) return;
     try {
         await API.business.deleteStaff(id);
         loadBusinessStaff();
@@ -4219,7 +4285,10 @@ window.deleteBizStaff = async (id) => {
 
 
 window.showManualReservationModal = async () => {
-    showModal('Manuel Rezervasyon', '<p>Yükleniyor...</p>');
+    showModal(t('mr.title'), `<p>${t('common.loading_generic')}</p>`);
+    
+    const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+    const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
     
     try {
         const services = await API.business.getServices();
@@ -4227,43 +4296,43 @@ window.showManualReservationModal = async () => {
         const html = `
             <form id="manual-res-form">
                 <div class="form-group">
-                    <label>Müşteri Adı *</label>
+                    <label>${t('mr.customer_name')} *</label>
                     <input type="text" id="mr-name" required>
                 </div>
                 <div class="form-group">
-                    <label>Telefon</label>
+                    <label>${t('bo.col.phone')}</label>
                     <input type="tel" id="mr-phone" placeholder="05XX XXX XX XX">
                 </div>
                 <div class="form-group">
-                    <label>Hizmet *</label>
+                    <label>${t('bo.col.service')} *</label>
                     <select id="mr-service" class="pretty-select" required onchange="window.loadManualSlots()">
-                        <option value="">Seçiniz</option>
-                        ${services.map(s => `<option value="${s.id}" data-cat="${s.category}">${s.name} ${s.price ? '- ' + s.price.toLocaleString('tr-TR') + ' ₺' : ''}</option>`).join('')}
+                        <option value="">${t('common.please_select')}</option>
+                        ${services.map(s => `<option value="${s.id}" data-cat="${s.category}">${s.name} ${s.price ? '- ' + s.price.toLocaleString(numberLocale) + ' ₺' : ''}</option>`).join('')}
                     </select>
                 </div>
                 <div id="mr-date-section" style="display: none;">
                     <div class="form-group">
-                        <label>Tarih *</label>
+                        <label>${t('bo.col.date')} *</label>
                         <input type="date" id="mr-date" onchange="window.loadManualSlots()">
                     </div>
                 </div>
                 <div id="mr-slot-section" style="display: none;">
                     <div class="form-group">
-                        <label>Saat *</label>
+                        <label>${t('st.time_label')} *</label>
                         <select id="mr-slot" class="pretty-select"></select>
                     </div>
                 </div>
                 <div id="mr-hotel-section" style="display: none;">
                     <div style="padding: 1rem; background: #f9fafb; border-radius: 12px; border: 1px solid #eef2f7;">
-                        <p style="font-weight: 700; margin-bottom: 0.35rem;">Giriş / Çıkış Tarihleri *</p>
-                        <p style="font-size: 0.82rem; color: #666; margin-bottom: 0.8rem;">Önce giriş gününe, sonra çıkış gününe tıklayın.</p>
+                        <p style="font-weight: 700; margin-bottom: 0.35rem;">${t('mr.checkin_checkout')} *</p>
+                        <p style="font-size: 0.82rem; color: #666; margin-bottom: 0.8rem;">${t('mr.dates_hint')}</p>
                         <input type="hidden" id="mr-checkin" value="">
                         <input type="hidden" id="mr-checkout" value="">
                         <div id="mr-hotel-calendar"></div>
                         <div id="mr-hotel-picked" style="margin-top: 0.65rem; font-size: 0.85rem; color: #475569; font-weight: 600;"></div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Rezervasyon Oluştur</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">${t('mr.create')}</button>
             </form>
         `;
         document.querySelector('.modal-content').innerHTML = html;
@@ -4337,7 +4406,7 @@ window.showManualReservationModal = async () => {
                     <span>${title}</span>
                     <button type="button" class="btn btn-sm btn-outline" onclick="window.shiftManualHotelMonth(1)">›</button>
                 </div>
-                <div class="inline-cal-weekdays">${['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'].map((x) => `<div>${x}</div>`).join('')}</div>
+                <div class="inline-cal-weekdays">${[t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat'),t('common.day_sun')].map((x) => `<div>${x}</div>`).join('')}</div>
                 <div class="inline-cal-grid">${gridHtml}</div>
             `;
 
@@ -4394,11 +4463,11 @@ window.showManualReservationModal = async () => {
                 const ci = document.getElementById('mr-checkin').value;
                 const co = document.getElementById('mr-checkout').value;
                 if (!ci || !co) {
-                    showToast('Lütfen giriş ve çıkış tarihi seçin.', 'error');
+                    showToast(t('toast.pick_dates'), 'error');
                     return;
                 }
                 if (new Date(co) <= new Date(ci)) {
-                    showToast('Çıkış tarihi girişten sonra olmalı.', 'error');
+                    showToast(t('toast.checkout_after_checkin'), 'error');
                     return;
                 }
                 payload.check_in = ci;
@@ -4409,7 +4478,7 @@ window.showManualReservationModal = async () => {
             
             try {
                 await API.business.createManualReservation(payload);
-                showToast('Rezervasyon oluşturuldu');
+                showToast(t('toast.reservation_created'));
                 closeModal();
                 if (window.loadBusinessReservations) loadBusinessReservations();
             } catch (err) { showToast(err.message, 'error'); }
@@ -4421,7 +4490,7 @@ window.showManualReservationModal = async () => {
 };
 
 async function viewBusinessSettings(container) {
-    renderBusinessShell(container, '#business-settings', 'İşletme Ayarları', `
+    renderBusinessShell(container, '#business-settings', t('bo.title.settings'), `
         <div id="biz-settings-content" class="loading-row">Yükleniyor...</div>
     `);
 
@@ -4524,7 +4593,7 @@ async function viewBusinessSettings(container) {
                     latitude: latVal ? parseFloat(latVal) : null,
                     longitude: lngVal ? parseFloat(lngVal) : null
                 });
-                showToast('Bilgiler güncellendi');
+                showToast(t('profile.info_updated'));
             } catch (err) { showToast(err.message, 'error'); }
             btn.disabled = false;
         };
@@ -4547,7 +4616,7 @@ async function viewBusinessSettings(container) {
             });
             try {
                 await API.business.updateMe({ working_hours });
-                showToast('Çalışma saatleri güncellendi');
+                showToast(t('toast.hours_updated'));
             } catch (err) { showToast(err.message, 'error'); }
             btn.disabled = false;
         };
@@ -4561,31 +4630,31 @@ async function viewStaffDashboard(container) {
     container.innerHTML = `
         <div class="container" style="padding-top: 4rem;">
             <div style="display: flex; gap: 1rem; margin-bottom: 3rem;">
-                <button class="btn btn-primary" onclick="window.location.hash='#staff-dashboard'">Takvim</button>
-                <button class="btn btn-outline" onclick="window.location.hash='#staff-reservations'">Rezervasyonlar</button>
-                <button class="btn btn-outline" onclick="window.location.hash='#staff-services'">Hizmetler</button>
+                <button class="btn btn-primary" onclick="window.location.hash='#staff-dashboard'">${t('st.menu.calendar')}</button>
+                <button class="btn btn-outline" onclick="window.location.hash='#staff-reservations'">${t('st.menu.reservations')}</button>
+                <button class="btn btn-outline" onclick="window.location.hash='#staff-services'">${t('st.menu.services')}</button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
-                <h1>Çalışma Takvimi</h1>
+                <h1>${t('st.work_schedule')}</h1>
                 <div style="display:flex; gap:0.5rem;">
-                    <button class="btn btn-outline btn-sm" onclick="window.loadSchedule('daily')">Bugün</button>
-                    <button class="btn btn-outline btn-sm" onclick="window.loadSchedule('weekly')">Bu Hafta</button>
+                    <button class="btn btn-outline btn-sm" onclick="window.loadSchedule('daily')">${t('st.menu.dashboard')}</button>
+                    <button class="btn btn-outline btn-sm" onclick="window.loadSchedule('weekly')">${t('st.this_week')}</button>
                 </div>
             </div>
-            <div id="schedule-container" class="service-card" style="padding: 2rem;">Yükleniyor...</div>
+            <div id="schedule-container" class="service-card" style="padding: 2rem;">${t('common.loading_generic')}</div>
         </div>
     `;
 
     window.loadSchedule = async (view = 'weekly') => {
         const el = document.getElementById('schedule-container');
-        el.innerHTML = 'Yükleniyor...';
+        el.innerHTML = t('common.loading_generic');
         try {
             if (!API || !API.staff || !API.staff.getSchedule) {
-                throw new Error('Takvim servisi bulunamadı (API.staff.getSchedule). Sayfayı yenileyin.');
+                throw new Error(t('st.api_error'));
             }
             const data = await API.staff.getSchedule(view);
             if (!data.reservations.length) {
-                el.innerHTML = `<p style="text-align:center; color:#999; padding:3rem;">Bu dönem için rezervasyon bulunmuyor.</p>`;
+                el.innerHTML = `<p style="text-align:center; color:#999; padding:3rem;">${t('st.no_reservations_period')}</p>`;
                 return;
             }
             const grouped = {};
@@ -4602,7 +4671,7 @@ async function viewStaffDashboard(container) {
                             <div style="flex:1;">
                                 <strong style="font-size:0.95rem;">${r.service_name}</strong>
                                 <p style="margin:0.15rem 0; color:var(--text-muted); font-size:0.82rem;">
-                                    ${r.slot_time ? `Saat: ${r.slot_time}` : `${r.check_in} — ${r.check_out}`} &middot; ${r.user_name}
+                                    ${r.slot_time ? `${t('st.time_label')}: ${r.slot_time}` : `${r.check_in} — ${r.check_out}`} &middot; ${r.user_name}
                                 </p>
                             </div>
                             <span class="badge badge-${r.status}">${LOCALE.STATUS[r.status]}</span>
@@ -4627,34 +4696,34 @@ async function viewStaffReservations(container) {
     container.innerHTML = `
         <div class="container" style="padding-top: 4rem;">
             <div class="page-actions">
-                <button class="btn btn-outline" onclick="window.location.hash='#staff-dashboard'">Takvim</button>
-                <button class="btn btn-primary" onclick="window.location.hash='#staff-reservations'">Rezervasyonlar</button>
-                <button class="btn btn-outline" onclick="window.location.hash='#staff-services'">Hizmetler</button>
+                <button class="btn btn-outline" onclick="window.location.hash='#staff-dashboard'">${t('st.menu.calendar')}</button>
+                <button class="btn btn-primary" onclick="window.location.hash='#staff-reservations'">${t('st.menu.reservations')}</button>
+                <button class="btn btn-outline" onclick="window.location.hash='#staff-services'">${t('st.menu.services')}</button>
             </div>
             <div class="page-header">
-                <h1>Tüm Rezervasyonlar</h1>
+                <h1>${t('st.all_reservations')}</h1>
                 <select id="status-filter" class="pretty-select" onchange="window.filterStaffRes(this.value)">
-                    <option value="">Tümü</option>
-                    <option value="pending">Beklemede</option>
-                    <option value="approved">Onaylandı</option>
-                    <option value="rejected">Reddedildi</option>
+                    <option value="">${t('home.filter_all')}</option>
+                    <option value="pending">${t('status.pending')}</option>
+                    <option value="approved">${t('status.approved')}</option>
+                    <option value="rejected">${t('status.rejected')}</option>
                 </select>
             </div>
-            <div id="staff-res-list">Yükleniyor...</div>
+            <div id="staff-res-list">${t('common.loading_generic')}</div>
         </div>
     `;
 
     window.filterStaffRes = async (status) => {
         const el = document.getElementById('staff-res-list');
-        el.innerHTML = 'Yükleniyor...';
+        el.innerHTML = t('common.loading_generic');
         try {
             const data = await API.staff.getReservations(1, status);
             if (!data.reservations.length) {
-                el.innerHTML = '<p style="color:#999; text-align:center; padding:3rem;">Kayıt bulunamadı.</p>';
+                el.innerHTML = `<p style="color:#999; text-align:center; padding:3rem;">${t('common.no_records')}</p>`;
                 return;
             }
             el.innerHTML = `<table class="admin-table">
-                <thead><tr><th>Müşteri</th><th>İletişim</th><th>Hizmet</th><th>Tarih/Saat</th><th>Durum</th><th>İşlemler</th><th>Yorum</th></tr></thead>
+                <thead><tr><th>${t('bo.col.customer')}</th><th>${t('bo.col.contact')}</th><th>${t('bo.col.service')}</th><th>${t('bo.col.datetime')}</th><th>${t('bo.col.status')}</th><th>${t('sa.col.actions')}</th><th>${t('res.review')}</th></tr></thead>
                 <tbody>${data.reservations.map(r => `
                     <tr>
                         <td>${r.user_name || '—'}</td>
@@ -4670,16 +4739,16 @@ async function viewStaffReservations(container) {
                         <td>
                             <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                             ${r.status === 'pending' ? `
-                                <button class="btn btn-outline btn-sm" style="color:var(--success);border-color:var(--success);" onclick="window.staffUpdateResStatus(${r.id}, 'approved')">Onayla</button>
-                                <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.staffUpdateResStatus(${r.id}, 'rejected')">Reddet</button>
+                                <button class="btn btn-outline btn-sm" style="color:var(--success);border-color:var(--success);" onclick="window.staffUpdateResStatus(${r.id}, 'approved')">${t('btn.approve')}</button>
+                                <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.staffUpdateResStatus(${r.id}, 'rejected')">${t('btn.reject')}</button>
                             ` : ''}
                             ${r.status === 'approved' ? `
-                                <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.staffCancelRes(${r.id})">İptal Et</button>
+                                <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.staffCancelRes(${r.id})">${t('res.cancel')}</button>
                             ` : ''}
                             ${r.status !== 'pending' && r.status !== 'approved' ? '—' : ''}
                             </div>
                         </td>
-                        <td><button class="btn btn-outline btn-sm" onclick="window.showReviewsForReservation(${r.id}, '${r.service_name.replace(/'/g,"\\'")}')" style="font-size:0.75rem;">Yorumlar</button></td>
+                        <td><button class="btn btn-outline btn-sm" onclick="window.showReviewsForReservation(${r.id}, '${r.service_name.replace(/'/g,"\\'")}')" style="font-size:0.75rem;">${t('biz.reviews')}</button></td>
                     </tr>
                 `).join('')}</tbody>
             </table>`;
@@ -4690,16 +4759,16 @@ async function viewStaffReservations(container) {
         try {
             await API.staff.updateReservationStatus(id, status);
             window.filterStaffRes(document.getElementById('status-filter')?.value || '');
-            showToast(status === 'approved' ? 'Rezervasyon onaylandı.' : 'Rezervasyon reddedildi.', 'success');
+            showToast(status === 'approved' ? t('toast.reservation_approved') : t('toast.reservation_rejected'), 'success');
         } catch (e) { showToast(e.message, 'error'); }
     };
 
     window.staffCancelRes = async (id) => {
-        if (!confirm('Onaylanan rezervasyon iptal edilsin mi?')) return;
+        if (!confirm(t('confirm.cancel_approved_reservation'))) return;
         try {
             await API.staff.updateReservationStatus(id, 'rejected');
             window.filterStaffRes(document.getElementById('status-filter')?.value || '');
-            showToast('Rezervasyon iptal edildi.', 'success');
+            showToast(t('toast.reservation_cancelled'), 'success');
         } catch (e) { showToast(e.message, 'error'); }
     };
 
@@ -4708,7 +4777,7 @@ async function viewStaffReservations(container) {
             const res = await API.staff.getReservation(resId);
             const reviews = await API.reviews.getForService(res.service_id);
             const rv = reviews.find(r => r.reservation_id === resId);
-            if (!rv) return showToast('Bu rezervasyon için yorum yok.', 'error');
+            if (!rv) return showToast(t('toast.no_review_for_reservation'), 'error');
             showModal(`${serviceName} — Yorum`, `
                 <div style="margin-bottom:1rem;">
                     <div style="color:#f59e0b; font-size:1.5rem;">${'★'.repeat(rv.rating)}${'☆'.repeat(5 - rv.rating)}</div>
@@ -4723,8 +4792,8 @@ async function viewStaffReservations(container) {
             `);
             window.submitReply = async (reviewId) => {
                 const reply = document.getElementById('staff-reply').value.trim();
-                if (!reply) return showToast('Yanıt boş olamaz.', 'error');
-                try { await API.staff.replyReview(reviewId, reply); showToast('Yanıt gönderildi.'); closeModal(); } catch(e) { showToast(e.message, 'error'); }
+                if (!reply) return showToast(t('toast.reply_empty'), 'error');
+                try { await API.staff.replyReview(reviewId, reply); showToast(t('toast.reply_sent')); closeModal(); } catch(e) { showToast(e.message, 'error'); }
             };
         } catch (e) { showToast(e.message, 'error'); }
     };
@@ -4736,38 +4805,40 @@ async function viewStaffServices(container) {
     container.innerHTML = `
         <div class="container" style="padding-top: 4rem;">
             <div style="display: flex; gap: 1rem; margin-bottom: 3rem;">
-                <button class="btn btn-outline" onclick="window.location.hash='#staff-dashboard'">Takvim</button>
-                <button class="btn btn-outline" onclick="window.location.hash='#staff-reservations'">Rezervasyonlar</button>
-                <button class="btn btn-primary" onclick="window.location.hash='#staff-services'">Hizmetler</button>
+                <button class="btn btn-outline" onclick="window.location.hash='#staff-dashboard'">${t('st.menu.calendar')}</button>
+                <button class="btn btn-outline" onclick="window.location.hash='#staff-reservations'">${t('st.menu.reservations')}</button>
+                <button class="btn btn-primary" onclick="window.location.hash='#staff-services'">${t('st.menu.services')}</button>
             </div>
-            <h1 style="margin-bottom: 2rem;">Hizmetler & Müsaitlik Yönetimi</h1>
-            <div id="staff-services-list">Yükleniyor...</div>
+            <h1 style="margin-bottom: 2rem;">${t('st.services_avail_mgmt')}</h1>
+            <div id="staff-services-list">${t('common.loading_generic')}</div>
         </div>
     `;
 
     try {
         const services = await API.staff.getServices();
         const list = document.getElementById('staff-services-list');
+        const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+        const numberLocale = lang === 'tr' ? 'tr-TR' : 'en-US';
         
         if (!services.length) {
-            list.innerHTML = '<p style="color:#999; text-align:center; padding:3rem;">Bu işletmeye ait hizmet bulunamadı.</p>';
+            list.innerHTML = `<p style="color:#999; text-align:center; padding:3rem;">${t('st.no_services_for_business')}</p>`;
             return;
         }
 
         list.innerHTML = `
             <table class="admin-table">
-                <thead><tr><th>Hizmet Adı</th><th>Kategori</th><th>Fiyat</th><th>İşlemler</th></tr></thead>
+                <thead><tr><th>${t('bo.col.service')}</th><th>${t('bo.col.category')}</th><th>${t('bo.col.price')}</th><th>${t('sa.col.actions')}</th></tr></thead>
                 <tbody>
                     ${services.map(s => `
                         <tr>
                             <td><strong>${s.name}</strong></td>
-                            <td><span class="badge" style="background:#eee">${s.category === 'hotel' ? 'Oda' : 'Randevu'}</span></td>
-                            <td>${s.price ? `${s.price.toLocaleString('tr-TR')} ₺` : '-'}</td>
+                            <td><span class="badge" style="background:#eee">${s.category === 'hotel' ? t('st.cat.room') : t('sa.cat.appointment')}</span></td>
+                            <td>${s.price ? `${s.price.toLocaleString(numberLocale)} ₺` : '-'}</td>
                             <td>
                                 ${s.category === 'hotel' 
-                                    ? `<button class="btn btn-outline btn-sm" onclick="window.showStaffAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">Rezervasyon Tarihleri</button>`
-                                    : `<button class="btn btn-outline btn-sm" onclick="window.showApptAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">Müsaitlik Oluştur</button>
-                                       <button class="btn btn-outline btn-sm" onclick="window.showSlotsModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', false)">Slotlar</button>`
+                                    ? `<button class="btn btn-outline btn-sm" onclick="window.showStaffAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">${t('st.reservation_dates')}</button>`
+                                    : `<button class="btn btn-outline btn-sm" onclick="window.showApptAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">${t('st.create_availability')}</button>
+                                       <button class="btn btn-outline btn-sm" onclick="window.showSlotsModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', false)">${t('st.slots')}</button>`
                                 }
                             </td>
                         </tr>
@@ -4802,8 +4873,8 @@ window.showStaffAvailabilityManager = async (serviceId, serviceName) => {
             <div class="loading-row">Yükleniyor...</div>
         </div>
         <p style="margin-top: 0.8rem; font-size: 0.8rem; color: #666;">
-            <span style="display:inline-block; width:12px; height:12px; background:#f0fdf4; border:1px solid #10b981; border-radius:3px; margin-right:4px;"></span> Müsait
-            <span style="display:inline-block; width:12px; height:12px; background:#fef2f2; border:1px solid #ef4444; border-radius:3px; margin-left:12px; margin-right:4px;"></span> Dolu
+            <span style="display:inline-block; width:12px; height:12px; background:#f0fdf4; border:1px solid #10b981; border-radius:3px; margin-right:4px;"></span> ${t('cal.available')}
+            <span style="display:inline-block; width:12px; height:12px; background:#fef2f2; border:1px solid #ef4444; border-radius:3px; margin-left:12px; margin-right:4px;"></span> ${t('cal.booked')}
             <span style="display:inline-block; width:12px; height:12px; background:#fff7ed; border:1px solid #f59e0b; border-radius:3px; margin-left:12px; margin-right:4px;"></span> Rezerve (kilitli)
         </p>
         <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #999;">Tıklayarak müsaitlik durumunu değiştirebilirsiniz (rezerve günler kilitlidir).</p>
@@ -5038,12 +5109,12 @@ window.handleImageUpload = async (e) => {
             preview.src = data.url;
             preview.style.display = 'block';
             overlay.classList.add('has-image');
-            showToast("Resim başarıyla yüklendi");
+            showToast(t('toast.image_uploaded'));
         } else {
             showToast(data.msg || "Yükleme hatası", 'error');
         }
     } catch (err) {
-        showToast("Sunucu hatası oluştu", 'error');
+        showToast(t('toast.server_error'), 'error');
     } finally {
         overlay.style.opacity = '1';
         overlay.style.pointerEvents = 'auto';
