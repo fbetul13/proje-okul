@@ -379,7 +379,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Konaklama</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.accommodation')}</p>
                             </div>
                         </div>
                     </a>
@@ -387,7 +387,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Yeme & İçme</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.food')}</p>
                             </div>
                         </div>
                     </a>
@@ -395,7 +395,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Güzellik & Bakım</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.beauty')}</p>
                             </div>
                         </div>
                     </a>
@@ -403,7 +403,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Sağlık & Wellness</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.health')}</p>
                             </div>
                         </div>
                     </a>
@@ -411,7 +411,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Spor & Aktivite</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.sport')}</p>
                             </div>
                         </div>
                     </a>
@@ -419,7 +419,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Etkinlik & Organizasyon</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.event')}</p>
                             </div>
                         </div>
                     </a>
@@ -427,7 +427,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Hizmet & Servis</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.service')}</p>
                             </div>
                         </div>
                     </a>
@@ -435,7 +435,7 @@ async function viewHotels(container) {
                         <div style="background: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=600') center/cover; height: 160px; border-radius: 12px; position: relative; overflow: hidden;">
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);"></div>
                             <div style="position: absolute; bottom: 1.2rem; left: 1.2rem; color: white;">
-                                <p style="font-size: 1.1rem; font-weight: 600;">Eğitim</p>
+                                <p style="font-size: 1.1rem; font-weight: 600;">${t('nav.biz_cat.education')}</p>
                             </div>
                         </div>
                     </a>
@@ -862,10 +862,10 @@ async function viewHotelDetail(container) {
                 grid.innerHTML = gridHtml.join('') + `
                     <div id="booking-cta" style="grid-column: 1/-1; margin-top: 3rem; display: none; text-align: center; border-top: 1px solid #eee; padding-top: 2rem;">
                         <p id="selected-room-info" style="font-weight: 600; margin-bottom: 1rem;"></p>
-                        <button class="btn btn-primary" style="padding: 1rem 3rem;" onclick="redirectToBooking()">Devam Et ve Rezerve Et</button>
+                        <button class="btn btn-primary" style="padding: 1rem 3rem;" onclick="redirectToBooking()">${t('biz.continue_book')}</button>
                     </div>
                 `;
-            } catch (e) { grid.innerHTML = 'Hata: ' + e.message; }
+            } catch (e) { grid.innerHTML = t('common.error') + ': ' + e.message; }
         };
 
         window.selectRoomForBooking = (roomId, name, el) => {
@@ -983,9 +983,9 @@ async function viewBusinessDetail(container) {
                                     <img src="${s.image_url || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=600'}" class="service-img">
                                     <div class="service-info">
                                         <h3 style="font-size: 1.2rem;">${s.name}</h3>
-                                        <p style="color: var(--text-muted); font-size: 0.85rem;">${s.room_type || 'Standart'} - ${s.room_number || ''}</p>
+                                        <p style="color: var(--text-muted); font-size: 0.85rem;">${s.room_type || t('biz.room_standart')} - ${s.room_number || ''}</p>
                                         ${s.price ? `<p style="font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: 0.5rem 0;">${s.price.toLocaleString(numberLocale)} ₺ ${t('res.per_night')}</p>` : ''}
-                                        <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="window.openRoomBookingModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', '${s.room_type || 'Standart'}', ${s.price || 0})">${t('modal.book')}</button>
+                                        <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="window.openRoomBookingModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', '${s.room_type || t('biz.room_standart')}', ${s.price || 0})">${t('modal.book')}</button>
                                     </div>
                                 </div>
                             `).join('')}
@@ -1042,7 +1042,7 @@ async function viewBusinessDetail(container) {
                                         </div>
                                     </div>
                                     ${r.comment ? `<p style="color: #4b5563; line-height: 1.6;">${r.comment}</p>` : ''}
-                                    ${r.created_at ? `<p style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">${new Date(r.created_at).toLocaleDateString('tr-TR')}</p>` : ''}
+                                    ${r.created_at ? `<p style="font-size: 0.8rem; color: #999; margin-top: 0.5rem;">${new Date(r.created_at).toLocaleDateString(numberLocale)}</p>` : ''}
                                     ${r.staff_reply ? `
                                         <div style="margin-top: 1rem; padding: 1rem; background: white; border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;">
                                             <strong style="font-size: 0.85rem; color: var(--accent);">İşletme Yanıtı:</strong>
@@ -1494,9 +1494,9 @@ window.openApptAvailCalendar = async (serviceId, gridId, summaryId = null) => {
                 const box = document.getElementById(summaryId);
                 if (box) {
                     box.innerHTML = sum && sum.min_date ? `
-                        <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">Mevcut Müsaitlik Dönemi</h4>
+                        <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">${t('avail.current_period')}</h4>
                         <p style="font-size: 1.05rem; font-weight: 600; color: var(--accent);">
-                            ${new Date(sum.min_date).toLocaleDateString('tr-TR')} - ${new Date(sum.max_date).toLocaleDateString('tr-TR')}
+                            ${new Date(sum.min_date).toLocaleDateString(numberLocale)} - ${new Date(sum.max_date).toLocaleDateString(numberLocale)}
                         </p>
                         <p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
                             Toplam ${sum.total_slots} slot, ${sum.available_slots} slot müsait
@@ -1576,7 +1576,7 @@ window.applyApptAvailRangeAdd = async () => {
         const res = role === 'business_owner'
             ? await API.business.generateSlots(serviceId, { start_date: rangeStartIso, end_date: rangeEndIso })
             : await API.staff.generateSlots(serviceId, { start_date: rangeStartIso, end_date: rangeEndIso });
-        showToast(res.msg || 'Müsaitlik oluşturuldu.', 'success');
+        showToast(res.msg || t('toast.availability_created'), 'success');
         await window.openApptAvailCalendar(serviceId, gridId, summaryId);
     } catch (e) { showToast(e.message, 'error'); }
 };
@@ -1756,7 +1756,7 @@ window.calculateRoomPrice = () => {
     const rEl = document.getElementById('room-date-range');
     if (nEl) nEl.textContent = nights;
     if (pEl) pEl.textContent = total.toLocaleString('tr-TR') + ' ₺';
-    if (rEl) rEl.innerHTML = `${start.toLocaleDateString('tr-TR')}<br>→ ${end.toLocaleDateString('tr-TR')}`;
+    if (rEl) rEl.innerHTML = `${start.toLocaleDateString(numberLocale)}<br>→ ${end.toLocaleDateString(numberLocale)}`;
     summaryEl.style.display = 'block';
 };
 
@@ -1833,8 +1833,8 @@ window.paintHotelModalCalendar = function () {
         <div class="inline-cal-weekdays">${[t('common.day_mon'),t('common.day_tue'),t('common.day_wed'),t('common.day_thu'),t('common.day_fri'),t('common.day_sat'),t('common.day_sun')].map((x) => `<div>${x}</div>`).join('')}</div>
         <div class="inline-cal-grid">${gridHtml}</div>
         <div class="inline-cal-legend">
-            <span><i></i> Müsait</span>
-            <span><i class="booked"></i> Dolu</span>
+            <span><i></i> ${t('cal.available')}</span>
+            <span><i class="booked"></i> ${t('cal.booked')}</span>
         </div>
     `;
 };
@@ -2131,7 +2131,7 @@ window.selectModalSlot = (slotId, el) => {
     
     if (summaryEl && date) {
         const dateObj = new Date(date);
-        document.getElementById('appt-selected-time').textContent = `${dateObj.toLocaleDateString('tr-TR')} - ${time}`;
+        document.getElementById('appt-selected-time').textContent = `${dateObj.toLocaleDateString(numberLocale)} - ${time}`;
         summaryEl.style.display = 'block';
     }
 };
@@ -2269,7 +2269,7 @@ async function viewServiceDetail(container) {
                 } else {
                     container.innerHTML = '<p style="color: var(--error);">Bu tarihte müsait randevu bulunamadı.</p>';
                 }
-            } catch (e) { container.innerHTML = 'Hata: ' + e.message; }
+            } catch (e) { container.innerHTML = t('common.error') + ': ' + e.message; }
         };
 
         window.submitFinalBooking = async (svcId, category) => {
@@ -3491,7 +3491,7 @@ async function viewBusinessDashboard(container) {
     const todayISO = new Date().toISOString().slice(0, 10);
     const fmtDate = (iso) => {
         if (!iso) return '—';
-        try { return new Date(iso).toLocaleDateString('tr-TR'); } catch (_) { return String(iso); }
+        try { return new Date(iso).toLocaleDateString(numberLocale); } catch (_) { return String(iso); }
     };
     const fmtDateTime = (d, t) => {
         if (!d) return '—';
@@ -3757,8 +3757,8 @@ window.loadBusinessServices = async () => {
                                 <div style="display:flex; gap:0.5rem; justify-content:flex-end;">
                                     ${s.category === 'hotel' 
                                         ? `<button class="btn btn-outline btn-sm" onclick="window.showAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">${t('st.reservation_dates')}</button>`
-                                        : `<button class="btn btn-outline btn-sm" onclick="window.showApptAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">Müsaitlik Oluştur</button>
-                                           <button class="btn btn-outline btn-sm" onclick="window.showSlotsModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', false)">Slotlar</button>`
+                                        : `<button class="btn btn-outline btn-sm" onclick="window.showApptAvailabilityManager(${s.id}, '${s.name.replace(/'/g,"\\'")}')">${t('st.create_availability')}</button>
+                                           <button class="btn btn-outline btn-sm" onclick="window.showSlotsModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', false)">${t('st.slots')}</button>`
                                     }
                                     <button class="btn btn-outline btn-sm" onclick="window.showBizServiceFormModal(${JSON.stringify(s).replace(/"/g, '&quot;')})">${t('btn.edit')}</button>
                                     <button class="btn btn-danger btn-sm" onclick="window.deleteBizService(${s.id})">${t('btn.delete')}</button>
@@ -3825,7 +3825,7 @@ window.showSlotsModal = async (serviceId, serviceName, isHotel = false) => {
     const today = new Date().toISOString().split('T')[0];
     
     if (isHotel) {
-        showModal(`${serviceName} - Günlük Müsaitlik`, `
+        showModal(`${serviceName} - ${t('avail.daily')}`, `
             <p style="margin-bottom:1rem; color:#666;">Otel odaları için günlük müsaitlik takvimi. Tıklayarak durumu değiştirebilirsiniz.</p>
             <div id="slots-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:0.5rem;">
                 <div class="loading-row">Yükleniyor...</div>
@@ -3861,7 +3861,7 @@ window.loadHotelSlotsForModal = async (serviceId) => {
         }
 
         if (!slots.length) {
-            grid.innerHTML = '<p style="grid-column:1/-1; color:#999; text-align:center; padding:2rem;">Slot bulunamadı. "Müsaitlik Oluştur" ile 30 günlük takvim oluşturun.</p>';
+            grid.innerHTML = `<p style="grid-column:1/-1; color:#999; text-align:center; padding:2rem;">${t('avail.no_slots_hint')}</p>`;
             return;
         }
 
@@ -3876,7 +3876,7 @@ window.loadHotelSlotsForModal = async (serviceId) => {
                      style="cursor:pointer; padding:0.6rem 0.3rem; border-radius:8px; text-align:center; border:1px solid ${s.is_available ? '#10b981' : '#ef4444'}; background:${s.is_available ? '#f0fdf4' : '#fef2f2'};">
                     <div style="font-size:0.7rem; color:#666;">${dayName}</div>
                     <div style="font-weight:600; font-size:0.9rem;">${dayNum}/${month}</div>
-                    <div style="font-size:0.65rem; color:${s.is_available ? '#10b981' : '#ef4444'}; margin-top:2px;">${s.is_available ? 'Müsait' : 'Dolu'}</div>
+                    <div style="font-size:0.65rem; color:${s.is_available ? '#10b981' : '#ef4444'}; margin-top:2px;">${s.is_available ? t('cal.available') : t('cal.booked')}</div>
                 </div>
             `;
         }).join('');
@@ -3907,7 +3907,7 @@ window.loadSlotsForModal = async (serviceId) => {
                  onclick="window.toggleSlotAvailability(${s.id}, ${serviceId}, false)"
                  style="cursor:pointer; padding:0.75rem; border-radius:8px; text-align:center; border:1px solid ${s.is_available ? '#10b981' : '#ef4444'}; background:${s.is_available ? '#f0fdf4' : '#fef2f2'};">
                 <div style="font-weight:600;">${s.start_time.substring(0,5)}</div>
-                <div style="font-size:0.75rem; color:${s.is_available ? '#10b981' : '#ef4444'};">${s.is_available ? 'Müsait' : 'Meşgul'}</div>
+                <div style="font-size:0.75rem; color:${s.is_available ? '#10b981' : '#ef4444'};">${s.is_available ? t('cal.available') : t('cal.booked')}</div>
             </div>
         `).join('');
     } catch (e) { grid.innerHTML = `<p style="color:var(--error);">${e.message}</p>`; }
@@ -3947,7 +3947,7 @@ window.generateBizSlots = async (id, category = 'appointment') => {
 
 window.showApptAvailabilityManager = async (serviceId, serviceName) => {
     // Appointment services: select date range on calendar and generate slots for that range
-    showModal(`${serviceName} - Müsaitlik Oluştur`, `
+    showModal(`${serviceName} - ${t('avail.create')}`, `
         <div id="appt-avail-summary" style="margin-bottom: 1rem; padding: 1rem; background: #f8fafc; border-radius: 12px;"></div>
         <div id="appt-avail-calendar" style="border:1px solid #e2e8f0; border-radius:12px; padding:0.75rem; background:#fff;">
             <div class="loading-row">Yükleniyor...</div>
@@ -3973,7 +3973,7 @@ window.showAvailabilityManager = async (serviceId, serviceName) => {
             <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">Mevcut Rezervasyon Dönemi</h4>
             ${summary.min_date ? `
                 <p style="font-size: 1.1rem; font-weight: 600; color: var(--accent);">
-                    ${new Date(summary.min_date).toLocaleDateString('tr-TR')} - ${new Date(summary.max_date).toLocaleDateString('tr-TR')}
+                    ${new Date(summary.min_date).toLocaleDateString(numberLocale)} - ${new Date(summary.max_date).toLocaleDateString(numberLocale)}
                 </p>
                 <p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
                     Toplam ${summary.total_slots} gün, ${summary.available_slots} gün müsait
@@ -4107,7 +4107,7 @@ window.addAvailabilityRange = async (serviceId) => {
             summaryDiv.innerHTML = `
                 <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">Mevcut Rezervasyon Dönemi</h4>
                 <p style="font-size: 1.1rem; font-weight: 600; color: var(--accent);">
-                    ${new Date(summary.min_date).toLocaleDateString('tr-TR')} - ${new Date(summary.max_date).toLocaleDateString('tr-TR')}
+                    ${new Date(summary.min_date).toLocaleDateString(numberLocale)} - ${new Date(summary.max_date).toLocaleDateString(numberLocale)}
                 </p>
                 <p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
                     Toplam ${summary.total_slots} gün, ${summary.available_slots} gün müsait
@@ -4156,7 +4156,7 @@ async function viewBusinessReservations(container) {
                                     <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.bizUpdateResStatus(${r.id}, 'rejected')">${t('btn.reject')}</button>
                                 ` : ''}
                                 ${r.status === 'approved' ? `
-                                    <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.bizCancelRes(${r.id})">İptal Et</button>
+                                    <button class="btn btn-outline btn-sm" style="color:var(--error);border-color:var(--error);" onclick="window.bizCancelRes(${r.id})">${t('res.cancel')}</button>
                                 ` : ''}
                                 </div>
                             </td>
@@ -4412,9 +4412,9 @@ window.showManualReservationModal = async () => {
 
             const picked = document.getElementById('mr-hotel-picked');
             if (picked) {
-                if (!ci && !co) picked.textContent = 'Tarih seçimi yapılmadı.';
-                else if (ci && !co) picked.textContent = `Giriş: ${new Date(ci).toLocaleDateString('tr-TR')} • Çıkış: —`;
-                else picked.textContent = `Giriş: ${new Date(ci).toLocaleDateString('tr-TR')} • Çıkış: ${new Date(co).toLocaleDateString('tr-TR')}`;
+                if (!ci && !co) picked.textContent = t('mr.no_dates_picked');
+                else if (ci && !co) picked.textContent = `${t('res.check_in')}: ${new Date(ci).toLocaleDateString(numberLocale)} • ${t('res.check_out')}: —`;
+                else picked.textContent = `${t('res.check_in')}: ${new Date(ci).toLocaleDateString(numberLocale)} • ${t('res.check_out')}: ${new Date(co).toLocaleDateString(numberLocale)}`;
             }
         };
 
@@ -4441,7 +4441,7 @@ window.showManualReservationModal = async () => {
                         const slotSelect = document.getElementById('mr-slot');
                         slotSelect.innerHTML = available.length 
                             ? available.map(s => `<option value="${s.id}">${s.start_time}</option>`).join('')
-                            : '<option value="">Müsait slot yok</option>';
+                            : `<option value="">${t('mr.no_slots')}</option>`;
                         document.getElementById('mr-slot-section').style.display = 'block';
                     } catch (e) { console.error(e); }
                 }
@@ -4860,7 +4860,7 @@ window.showStaffAvailabilityManager = async (serviceId, serviceName) => {
             <h4 style="margin-bottom: 0.5rem; font-size: 0.9rem; color: #666;">Mevcut Rezervasyon Dönemi</h4>
             ${summary.min_date ? `
                 <p style="font-size: 1.1rem; font-weight: 600; color: var(--accent);">
-                    ${new Date(summary.min_date).toLocaleDateString('tr-TR')} - ${new Date(summary.max_date).toLocaleDateString('tr-TR')}
+                    ${new Date(summary.min_date).toLocaleDateString(numberLocale)} - ${new Date(summary.max_date).toLocaleDateString(numberLocale)}
                 </p>
                 <p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
                     Toplam ${summary.total_slots} gün, ${summary.available_slots} gün müsait

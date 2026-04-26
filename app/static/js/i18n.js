@@ -556,6 +556,14 @@
             'mr.checkin_checkout': 'Giriş / Çıkış Tarihleri',
             'mr.dates_hint': 'Önce giriş gününe, sonra çıkış gününe tıklayın.',
             'mr.create': 'Rezervasyon Oluştur',
+            'mr.no_dates_picked': 'Tarih seçimi yapılmadı.',
+            // Availability management
+            'avail.current_period': 'Mevcut Müsaitlik Dönemi',
+            'avail.daily': 'Günlük Müsaitlik',
+            'avail.create': 'Müsaitlik Oluştur',
+            'avail.no_slots_hint': 'Slot bulunamadı. "Müsaitlik Oluştur" ile 30 günlük takvim oluşturun.',
+            'mr.no_slots': 'Müsait slot yok',
+            'biz.continue_book': 'Devam Et ve Rezerve Et',
 
             // Dil seçici
             'lang.switch': 'Dil',
@@ -1099,6 +1107,14 @@
             'mr.checkin_checkout': 'Check-in / Check-out Dates',
             'mr.dates_hint': 'First click the check-in day, then the check-out day.',
             'mr.create': 'Create Reservation',
+            'mr.no_dates_picked': 'No dates selected.',
+            // Availability management
+            'avail.current_period': 'Current Availability Period',
+            'avail.daily': 'Daily Availability',
+            'avail.create': 'Create Availability',
+            'avail.no_slots_hint': 'No slots found. Use "Create Availability" to generate a 30-day calendar.',
+            'mr.no_slots': 'No available slots',
+            'biz.continue_book': 'Continue and Book',
 
             // Language switcher
             'lang.switch': 'Language',
