@@ -9,6 +9,7 @@ from flask_mail import Mail
 from dotenv import load_dotenv
 from app.utils.db_schema import ensure_user_profile_columns
 
+
 load_dotenv()
 
 db = SQLAlchemy()
@@ -87,12 +88,16 @@ def create_app():
         from .routes.superadmin_routes import superadmin_bp
         from .routes.business_routes import business_bp
         from .routes.staff_routes import staff_bp
+        from .routes.copilot import copilot_bp 
+
 
         app.register_blueprint(auth_bp, url_prefix='/api/auth')
         app.register_blueprint(customer_bp, url_prefix='/api/customer')
         app.register_blueprint(superadmin_bp, url_prefix='/api/superadmin')
         app.register_blueprint(business_bp, url_prefix='/api/business')
         app.register_blueprint(staff_bp, url_prefix='/api/staff')
+        app.register_blueprint(copilot_bp) 
+
 
         @app.route('/')
         def index():
