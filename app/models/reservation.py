@@ -22,7 +22,9 @@ class Reservation(db.Model):
     reservation_type = db.Column(db.String(20), default='hotel') # 'hotel' or 'appointment'
     status = db.Column(db.String(20), default='pending') # 'pending', 'approved', 'rejected'
     note = db.Column(db.Text, nullable=True)
-
+    payment_status = db.Column(db.String(20), default='unpaid')  # 'unpaid', 'paid', 'failed'
+    stripe_session_id = db.Column(db.String(255), nullable=True)
+    paid_at = db.Column(db.DateTime, nullable=True)
     user = db.relationship('User', backref='reservations')
     service = db.relationship('Service', backref='reservations')
     slot = db.relationship('TimeSlot', backref='reservations')
@@ -44,6 +46,8 @@ class Reservation(db.Model):
             "total_guests": self.total_guests,
             "status": self.status,
             "note": self.note,
+            "payment_status": getattr(self, "payment_status", "unpaid"),
+            "paid_at": self.paid_at.isoformat() if getattr(self, "paid_at", None) else None,
             "user_name": usr.name if usr else None,
             "user_email": usr.email if usr else None,
             "user_phone": usr.phone if usr else None,

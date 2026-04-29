@@ -2695,7 +2695,7 @@ async function viewMyReservations(container) {
                             ? `${r.check_in} → ${r.check_out}`
                             : `${r.slot_date} · ${r.slot_time}`;
                         return `
-                        <div class="service-card cust-res-card">
+                        <div class="service-card cust-res-card" data-reservation-id="${r.id}" data-status="${r.status}" data-payment-status="${r.payment_status || "unpaid"}">
                             <div class="${thumbClass}" ${thumbStyle} role="img" aria-label="${escHtml(r.service_name)}"></div>
                             <div class="cust-res-main">
                                 <h3 class="cust-res-title">${escHtml(r.service_name)}</h3>

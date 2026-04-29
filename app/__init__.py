@@ -88,7 +88,8 @@ def create_app():
         from .routes.superadmin_routes import superadmin_bp
         from .routes.business_routes import business_bp
         from .routes.staff_routes import staff_bp
-        from .routes.copilot import copilot_bp 
+        from .routes.copilot import copilot_bp
+        from .routes.payment import payment_bp 
 
 
         app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -96,7 +97,8 @@ def create_app():
         app.register_blueprint(superadmin_bp, url_prefix='/api/superadmin')
         app.register_blueprint(business_bp, url_prefix='/api/business')
         app.register_blueprint(staff_bp, url_prefix='/api/staff')
-        app.register_blueprint(copilot_bp) 
+        app.register_blueprint(copilot_bp)
+        app.register_blueprint(payment_bp) 
 
 
         @app.route('/')
