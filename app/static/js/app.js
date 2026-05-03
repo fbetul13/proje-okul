@@ -239,7 +239,7 @@ async function loadLocationData() {
 window.updateIlceSelect = () => {
     const ilId = document.getElementById('filter-il').value;
     const ilceSelect = document.getElementById('filter-ilce');
-    ilceSelect.innerHTML = '<option value="">Tüm İlçeler</option>';
+    ilceSelect.innerHTML = `<option value="">${t('filter.all_districts')}</option>`;
     if (ilId && locationData && locationData.ilceler) {
         const filteredIlceler = locationData.ilceler
             .filter(i => i.il_id === ilId)
@@ -257,7 +257,7 @@ window.applyLocationFilter = async () => {
     const search = document.getElementById('filter-search')?.value || '';
     
     const params = {};
-    if (ilSelect.value && ilName !== 'Tüm İller') params.il = ilName;
+    if (ilSelect.value && ilName !== t('filter.all_cities')) params.il = ilName;
     if (ilce) params.ilce = ilce;
     if (search) params.search = search;
     
@@ -450,7 +450,7 @@ async function viewHotels(container) {
             const ilceSelect = document.getElementById('filter-ilce');
             const selectedIl = ilSelect.value;
             
-            ilceSelect.innerHTML = '<option value="">Tüm İlçeler</option>';
+            ilceSelect.innerHTML = `<option value="">${t('filter.all_districts')}</option>`;
             if (selectedIl && window.currentLocations) {
                 const il = window.currentLocations.iller.find(i => i.name === selectedIl);
                 if (il) {
@@ -471,7 +471,7 @@ async function viewHotels(container) {
             const grid = document.getElementById('businesses-grid');
             const title = document.getElementById('results-title');
 
-            grid.innerHTML = '<p style="text-align: center; padding: 2rem; color: #666;">Aranıyor...</p>';
+            grid.innerHTML = `<p style="text-align: center; padding: 2rem; color: #666;">${t('filter.searching')}</p>`;
 
             try {
                 const params = {};
@@ -486,9 +486,9 @@ async function viewHotels(container) {
 
                 let filterText = '';
                 if (il || ilce) filterText = `${il || ''}${ilce ? ' / ' + ilce : ''}`;
-                if (minRating) filterText += filterText ? ` (${minRating}+ Yıldız)` : `${minRating}+ Yıldız`;
+                if (minRating) filterText += filterText ? ` (${minRating}+ ${t('filter.stars')})` : `${minRating}+ ${t('filter.stars')}`;
                 
-                title.textContent = filterText ? `${filterText} İşletmeleri` : 'Popüler İşletmeler';
+                title.textContent = filterText ? `${filterText} ${t('filter.businesses_suffix')}` : t('filter.popular_businesses');
             } catch (e) {
                 grid.innerHTML = `<p style="color: red; text-align: center;">${e.message}</p>`;
             }
@@ -877,7 +877,7 @@ async function viewHotelDetail(container) {
             
             const cta = document.getElementById('booking-cta');
             cta.style.display = 'block';
-            document.getElementById('selected-room-info').innerHTML = `Seçilen Oda: <span style="color:var(--accent)">${name}</span>`;
+            document.getElementById('selected-room-info').innerHTML = `${t('hotel.selected_room')}: <span style="color:var(--accent)">${name}</span>`;
             cta.scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -899,7 +899,7 @@ async function viewBusinessDetail(container) {
 
     try {
         const business = await API.customer.getBusiness(businessId);
-        if (!business) return container.innerHTML = '<div class="container" style="padding: 5rem; text-align: center;"><h2>İşletme bulunamadı.</h2></div>';
+        if (!business) return container.innerHTML = `<div class="container" style="padding: 5rem; text-align: center;"><h2>${t('biz.not_found')}</h2></div>`;
 
         const hotelServices = business.services?.filter(s => s.category === 'hotel') || [];
         const appointmentServices = business.services?.filter(s => s.category === 'appointment') || [];
@@ -909,12 +909,12 @@ async function viewBusinessDetail(container) {
             ? `https://www.google.com/maps?q=${business.latitude},${business.longitude}`
             : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
         
-        const dayNames = { mon: 'Pazartesi', tue: 'Salı', wed: 'Çarşamba', thu: 'Perşembe', fri: 'Cuma', sat: 'Cumartesi', sun: 'Pazar' };
+        const dayNames = { mon: t('day.mon'), tue: t('day.tue'), wed: t('day.wed'), thu: t('day.thu'), fri: t('day.fri'), sat: t('day.sat'), sun: t('day.sun') };
         
         let workingHoursHtml = '';
         if (business.working_hours) {
             const hoursArr = Object.entries(business.working_hours).map(([day, hours]) => {
-                if (!hours) return `<span style="color: #999;">${dayNames[day]}: Kapalı</span>`;
+                if (!hours) return `<span style="color: #999;">${dayNames[day]}: ${t('day.closed')}</span>`;
                 return `<span>${dayNames[day]}: ${hours.open} - ${hours.close}</span>`;
             });
             workingHoursHtml = `<div style="display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-size: 0.85rem;">${hoursArr.join('')}</div>`;
@@ -939,7 +939,7 @@ async function viewBusinessDetail(container) {
                             ` : ''}
                         </div>
                         <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">${business.name}</h1>
-                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem;">${business.description || 'Açıklama bulunmuyor.'}</p>
+                        <p style="color: var(--text-muted); font-size: 1rem; line-height: 1.7; margin-bottom: 1.5rem;">${business.description || t('biz.no_description')}</p>
                         
                         <div style="display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem; background: #f9fafb; border-radius: 12px; font-size: 0.95rem;">
                             ${fullAddress ? `
@@ -967,7 +967,7 @@ async function viewBusinessDetail(container) {
                         
                         ${workingHoursHtml ? `
                             <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px;">
-                                <strong style="font-size: 0.85rem; color: #374151; display: block; margin-bottom: 0.5rem;">Çalışma Saatleri</strong>
+                                <strong style="font-size: 0.85rem; color: #374151; display: block; margin-bottom: 0.5rem;">${t('biz.opening_hours')}</strong>
                                 ${workingHoursHtml}
                             </div>
                         ` : ''}
@@ -1003,7 +1003,7 @@ async function viewBusinessDetail(container) {
                                     <div class="service-info">
                                         <h3 style="font-size: 1.2rem;">${s.name}</h3>
                                         ${s.price ? `<p style="font-size: 1.1rem; font-weight: 600; color: var(--accent); margin: 0.5rem 0;">${s.price.toLocaleString(numberLocale)} ₺</p>` : ''}
-                                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem; border-color: var(--accent); color: var(--accent);" onclick="window.openAppointmentModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', ${s.price || 0})">Randevu Al</button>
+                                        <button class="btn btn-outline" style="width: 100%; margin-top: 1rem; border-color: var(--accent); color: var(--accent);" onclick="window.openAppointmentModal(${s.id}, '${s.name.replace(/'/g,"\\'")}', ${s.price || 0})">${t('biz.make_appointment')}</button>
                                     </div>
                                 </div>
                             `).join('')}
@@ -1201,10 +1201,10 @@ function _buildAdminHotelMonthGrid(year, month0, ctx) {
                 label = '<div style="font-size:0.62rem; margin-top:2px; color:#b45309;">Rezerve</div>';
             } else if (slot.is_available) {
                 style = 'style="border-color:#10b981; background:#f0fdf4;"';
-                label = '<div style="font-size:0.62rem; margin-top:2px; color:#10b981;">Açık</div>';
+                label = `<div style="font-size:0.62rem; margin-top:2px; color:#10b981;">${t('day.open')}</div>`;
             } else {
                 style = 'style="border-color:#ef4444; background:#fef2f2;"';
-                label = '<div style="font-size:0.62rem; margin-top:2px; color:#ef4444;">Kapalı</div>';
+                label = `<div style="font-size:0.62rem; margin-top:2px; color:#ef4444;">${t('day.closed')}</div>`;
             }
         } else {
             if (addMode && !past && !booked) {
@@ -1290,7 +1290,7 @@ window.paintHotelAvailCalendar = () => {
 
     const rangeText = rangeStartIso
         ? (rangeEndIso ? `${rangeStartIso} → ${rangeEndIso}` : `${rangeStartIso} → ?`)
-        : 'Seçim yok';
+        : t('common.no_selection');
 
     root.innerHTML = `
         <div class="inline-cal-nav">
@@ -1305,7 +1305,7 @@ window.paintHotelAvailCalendar = () => {
                 </div>
                 <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
                     <button type="button" class="btn btn-sm ${addMode ? 'btn-primary' : 'btn-outline'}" onclick="window.toggleHotelAvailAddMode()">
-                        ${addMode ? 'Seçimi Kapat' : 'Aralık Seç'}
+                        ${addMode ? t('common.close_selection') : t('common.select_range')}
                     </button>
                     <button type="button" class="btn btn-sm btn-outline" onclick="window.clearHotelAvailRange()" ${!rangeStartIso ? 'disabled' : ''}>
                         Temizle
@@ -1316,7 +1316,7 @@ window.paintHotelAvailCalendar = () => {
                 </div>
             </div>
             <div style="font-size:0.75rem; color:#666; margin-bottom:0.5rem;">
-                ${addMode ? 'Takvimden ilk günü, sonra son günü seç.' : 'Slot eklemek için "Aralık Seç"i aç.'}
+                ${addMode ? t('avail.calendar_hint_select') : t('avail.calendar_hint_open')}
             </div>
         ` : ''}
         <div class="inline-cal-weekdays">
@@ -1404,7 +1404,7 @@ window.applyHotelAvailRangeAdd = async () => {
         const res = (role === 'business_owner')
             ? await API.business.generateSlots(serviceId, { start_date: rangeStartIso, end_date: rangeEndIso })
             : await API.staff.generateSlots(serviceId, { start_date: rangeStartIso, end_date: rangeEndIso });
-        showToast(res.msg || 'Tarih aralığı açıldı.', 'success');
+        showToast(res.msg || t('avail.range_opened'), 'success');
         await window.openHotelAvailCalendar(serviceId, gridId);
         if (window._hotelAvailCtx) window._hotelAvailCtx.addMode = true;
         window.paintHotelAvailCalendar();
@@ -1434,11 +1434,11 @@ function _buildAdminRangeMonthGrid(year, month0, ctx) {
         if (past || hasExisting) {
             cls += ' inline-cal-day--disabled';
             style = 'style="opacity:0.55; cursor:not-allowed;"';
-            label = hasExisting ? '<div style="font-size:0.62rem; margin-top:2px; color:#64748b;">Mevcut</div>' : '<div style="font-size:0.62rem; margin-top:2px; color:#94a3b8;">Geçmiş</div>';
+            label = hasExisting ? `<div style="font-size:0.62rem; margin-top:2px; color:#64748b;">${t('slot.existing')}</div>` : `<div style="font-size:0.62rem; margin-top:2px; color:#94a3b8;">${t('slot.past')}</div>`;
         } else if (!addMode) {
             cls += ' inline-cal-day--disabled';
             style = 'style="opacity:0.65; cursor:not-allowed;"';
-            label = '<div style="font-size:0.62rem; margin-top:2px; color:#94a3b8;">Seç</div>';
+            label = `<div style="font-size:0.62rem; margin-top:2px; color:#94a3b8;">${t('slot.select')}</div>`;
         } else {
             label = '<div style="font-size:0.62rem; margin-top:2px; color:#94a3b8;">Ekle</div>';
         }
@@ -1501,7 +1501,7 @@ window.openApptAvailCalendar = async (serviceId, gridId, summaryId = null) => {
                         <p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
                             Toplam ${sum.total_slots} slot, ${sum.available_slots} slot müsait
                         </p>
-                    ` : `<p style="color:#999;">Henüz müsaitlik yok</p>`;
+                    ` : `<p style="color:#999;">${t('hotel.no_availability')}</p>`;
                 }
             } catch (_) {}
         }
@@ -1592,7 +1592,7 @@ window.paintApptAvailCalendar = () => {
 
     const rangeText = rangeStartIso
         ? (rangeEndIso ? `${rangeStartIso} → ${rangeEndIso}` : `${rangeStartIso} → ?`)
-        : 'Seçim yok';
+        : t('common.no_selection');
 
     root.innerHTML = `
         <div class="inline-cal-nav">
@@ -1606,10 +1606,10 @@ window.paintApptAvailCalendar = () => {
             </div>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
                 <button type="button" class="btn btn-sm ${addMode ? 'btn-primary' : 'btn-outline'}" onclick="window._apptAvailCtx.addMode=!window._apptAvailCtx.addMode; window.paintApptAvailCalendar();">
-                    ${addMode ? 'Seçimi Kapat' : 'Aralık Seç'}
+                    ${addMode ? t('common.close_selection') : t('common.select_range')}
                 </button>
                 <button type="button" class="btn btn-sm btn-outline" onclick="window.clearApptAvailRange()" ${!rangeStartIso ? 'disabled' : ''}>Temizle</button>
-                <button type="button" class="btn btn-sm btn-primary" onclick="window.applyApptAvailRangeAdd()" ${!(rangeStartIso && rangeEndIso) ? 'disabled' : ''}>Aralığı Aç</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="window.applyApptAvailRangeAdd()" ${!(rangeStartIso && rangeEndIso) ? 'disabled' : ''}>${t('avail.open_range')}</button>
             </div>
         </div>
         <div class="inline-cal-weekdays">
@@ -1903,7 +1903,7 @@ window.confirmRoomBooking = async () => {
     
     const btn = document.getElementById('room-book-btn');
     btn.disabled = true;
-    btn.textContent = 'İşleniyor...';
+    btn.textContent = t('common.processing');
     
     try {
         if (window._roomModalCtx?.mode === 'modify' && window._roomModalCtx.reservationId) {
@@ -1992,7 +1992,7 @@ window.openAppointmentModal = async (serviceId, serviceName, price, ctx = {}) =>
         
         <div class="form-group" style="margin-bottom: 1rem;">
             <label style="font-size: 0.85rem; color: #666;">${t('modal.note_optional')}</label>
-            <textarea id="modal-appt-note" rows="2" style="width: 100%; padding: 0.8rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: none;" placeholder="Özel istekleriniz...">${noteVal}</textarea>
+            <textarea id="modal-appt-note" rows="2" style="width: 100%; padding: 0.8rem; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: none;" placeholder="${t('booking.special_requests')}">${noteVal}</textarea>
         </div>
         
         ${priceSummaryBlock}
@@ -2113,7 +2113,7 @@ window.loadModalAppointmentSlots = async (serviceId) => {
                 if (el) window.selectModalSlot(keepId, el);
             }
         } else {
-            container.innerHTML = '<p style="grid-column: 1/-1; color: #999; text-align: center;">Bu tarihte müsait saat bulunamadı.</p>';
+            container.innerHTML = `<p style="grid-column: 1/-1; color: #999; text-align: center;">${t('svc.no_slots_for_date')}</p>`;
         }
     } catch (e) {
         container.innerHTML = `<p style="grid-column: 1/-1; color: red; text-align: center;">Hata: ${e.message}</p>`;
@@ -2150,7 +2150,7 @@ window.confirmAppointmentBooking = async () => {
     
     const btn = document.getElementById('appt-book-btn');
     btn.disabled = true;
-    btn.textContent = 'İşleniyor...';
+    btn.textContent = t('common.processing');
     
     try {
         if (window._apptModalCtx?.mode === 'modify' && window._apptModalCtx.reservationId) {
@@ -2198,7 +2198,7 @@ async function viewServiceDetail(container) {
                     <img src="${s.image_url || 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=1200'}" style="width: 100%; height: 500px; object-fit: cover; border-radius: 20px;">
                     <div style="margin-top: 2rem;">
                         <span class="badge" style="background: ${isHotel ? '#f3f4f6' : 'var(--accent)'}; color: ${isHotel ? '#374151' : 'white'}; margin-bottom: 1rem; display: inline-block;">
-                            ${isHotel ? '🏨 KONAKLAMA' : '📅 RANDEVU HİZMETİ'}
+                            ${isHotel ? t('svc.accommodation_label') : t('svc.appointment_label')}
                         </span>
                         <h1 style="font-size: 2.5rem;">${s.name}</h1>
                         <p style="color: var(--text-muted); margin: 1rem 0; font-size: 1.1rem;">${s.description}</p>
@@ -2219,24 +2219,24 @@ async function viewServiceDetail(container) {
                 </div>
                 <div class="detail-sidebar">
                     <div class="booking-panel">
-                        <h3>Rezervasyon Özeti</h3>
+                        <h3>${t('booking.summary')}</h3>
                         <div id="booking-summary" style="margin-top: 1.5rem; padding: 1.5rem; background: #fafafa; border-radius: 12px;">
                             ${isHotel ? `
                                 <p><strong>Giriş:</strong> ${urlStart}</p>
                                 <p><strong>Çıkış:</strong> ${urlEnd}</p>
-                            ` : '<p id="selected-slot-text">Henüz tarih ve saat seçilmedi.</p>'}
+                            ` : `<p id="selected-slot-text">${t('svc.no_slot_yet')}</p>`}
                         </div>
                         ${isHotel ? `
                         <div class="form-group" style="margin-top: 1.5rem;">
-                            <label>Kişi Sayısı</label>
+                            <label>${t('booking.num_guests')}</label>
                             <input type="number" id="adults" value="1" min="1" style="width: 100%;">
                         </div>
                         ` : ''}
                         <div style="padding-bottom:1rem">
-                           <label>Varsa Notunuz</label>
+                           <label>${t('booking.your_note')}</label>
                            <textarea id="note" class="form-control" style="width:100%"></textarea>
                         </div>
-                        <button class="btn btn-primary" onclick="window.submitFinalBooking(${id}, '${s.category}')">Rezervasyonu Tamamla</button>
+                        <button class="btn btn-primary" onclick="window.submitFinalBooking(${id}, '${s.category}')">${t('booking.complete')}</button>
                     </div>
                 </div>
             </div>
@@ -2256,7 +2256,7 @@ async function viewServiceDetail(container) {
 
         window.loadAppointmentSlots = async (svcId, date) => {
             const container = document.getElementById('appointment-slots');
-            container.innerHTML = 'Yükleniyor...';
+            container.innerHTML = t('common.loading');
             try {
                 const data = await API.customer.getAvailability(svcId, date);
                 if (data.slots && data.slots.length > 0) {
@@ -2267,7 +2267,7 @@ async function viewServiceDetail(container) {
                         </div>
                     `).join('');
                 } else {
-                    container.innerHTML = '<p style="color: var(--error);">Bu tarihte müsait randevu bulunamadı.</p>';
+                    container.innerHTML = `<p style="color: var(--error);">${t('svc.no_appts_for_date')}</p>`;
                 }
             } catch (e) { container.innerHTML = t('common.error') + ': ' + e.message; }
         };
@@ -2323,7 +2323,7 @@ async function viewServiceDetail(container) {
                 hid.value = iso;
                 selectedSlotId = null;
                 const st = document.getElementById('selected-slot-text');
-                if (st) st.innerHTML = 'Önce saat seçin.';
+                if (st) st.innerHTML = t('svc.select_time_first');
                 window._paintDetailAppointmentCalendar();
                 window.loadAppointmentSlots(window._detailApptServiceId, iso);
             };
@@ -2476,7 +2476,7 @@ async function viewResetPassword(container) {
         
         const btn = e.target.querySelector('button');
         btn.disabled = true;
-        btn.textContent = 'Güncelleniyor...';
+        btn.textContent = t('common.updating');
         
         try {
             await API.auth.resetPassword(token, password);
@@ -2779,7 +2779,7 @@ async function viewMyReservations(container) {
                     }
                 );
             } catch (e) {
-                showToast(e.message || 'Düzenleme açılamadı', 'error');
+                showToast(e.message || t('booking.modify_failed'), 'error');
             }
         };
 
@@ -2795,7 +2795,7 @@ async function viewMyReservations(container) {
                     </div>
                     <div class="form-group">
                         <label>Yorumunuz</label>
-                        <textarea id="review-comment" rows="4" placeholder="Deneyiminizi paylaşın..."></textarea>
+                        <textarea id="review-comment" rows="4" placeholder="${t('booking.share_experience')}"></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:1rem;">Gönder</button>
                 </form>
@@ -3270,9 +3270,9 @@ async function viewSuperAdminLogs(container) {
 }
 
 window.showEditUserModal = (u) => {
-    showModal('Kullanıcı Düzenle', `
+    showModal(t('user_form.title'), `
         <form id="edit-user-form">
-            <div class="form-group"><label>Ad Soyad</label><input type="text" id="eu-name" value="${u.name}" required></div>
+            <div class="form-group"><label>${t('user_form.full_name')}</label><input type="text" id="eu-name" value="${u.name}" required></div>
             <div class="form-group"><label>E-posta</label><input type="email" id="eu-email" value="${u.email}" required></div>
             <div class="form-group"><label>Rol</label>
                 <select id="eu-role" class="pretty-select">
@@ -3282,8 +3282,8 @@ window.showEditUserModal = (u) => {
                     <option value="superadmin" ${u.role==='superadmin'?'selected':''}>superadmin</option>
                 </select>
             </div>
-            <div class="form-group"><label>İşletme ID <span style="color:#999;font-size:0.8rem;">(staff/business_owner için)</span></label><input type="number" id="eu-biz" value="${u.business_id || ''}"></div>
-            <div class="form-group"><label>Yeni Şifre <span style="color:#999;font-size:0.8rem;">(boş bırakılabilir)</span></label><input type="password" id="eu-pass"></div>
+            <div class="form-group"><label>${t('user_form.business_id')} <span style="color:#999;font-size:0.8rem;">${t('user_form.business_id_hint')}</span></label><input type="number" id="eu-biz" value="${u.business_id || ''}"></div>
+            <div class="form-group"><label>${t('user_form.new_password')} <span style="color:#999;font-size:0.8rem;">${t('user_form.optional')}</span></label><input type="password" id="eu-pass"></div>
             <button type="submit" class="btn btn-primary" style="width:100%;margin-top:1rem;">Kaydet</button>
         </form>
     `);
@@ -3453,7 +3453,7 @@ window.showBusinessFormModal = async (biz = null) => {
 window.updateBizIlceSelect = async (selectedIlce = null) => {
     const ilName = document.getElementById('biz-il').value;
     const ilceSelect = document.getElementById('biz-ilce');
-    ilceSelect.innerHTML = '<option value="">Seçiniz</option>';
+    ilceSelect.innerHTML = `<option value="">${t('form.select')}</option>`;
     
     if (ilName && locationData) {
         const il = locationData.iller.find(i => i.name === ilName);
@@ -3525,7 +3525,7 @@ async function viewBusinessDashboard(container) {
             <div class="biz-dashboard__grid">
                 <div class="panel-card">
                     <div class="panel-header">
-                        <h3>Bugünün Ajandası</h3>
+                        <h3>${t('bo.today_agenda')}</h3>
                         <span class="panel-sub">${fmtDate(todayISO)}</span>
                     </div>
                     <div class="panel-body" id="biz-today-list">
@@ -3535,7 +3535,7 @@ async function viewBusinessDashboard(container) {
 
                 <div class="panel-card">
                     <div class="panel-header">
-                        <h3>Durum Dağılımı</h3>
+                        <h3>${t('bo.status_distribution')}</h3>
                         <span class="panel-sub">Genel</span>
                     </div>
                     <div class="panel-body">
@@ -3547,8 +3547,8 @@ async function viewBusinessDashboard(container) {
 
                 <div class="panel-card panel-card--full">
                     <div class="panel-header">
-                        <h3>Son Rezervasyonlar</h3>
-                        <a class="panel-link" href="#business-reservations">Tümünü gör</a>
+                        <h3>${t('bo.recent_reservations')}</h3>
+                        <a class="panel-link" href="#business-reservations">${t('common.see_all')}</a>
                     </div>
                     <div class="panel-body" id="biz-recent-res">
                         <div class="skeleton skeleton--block" style="height:160px"></div>
@@ -3558,8 +3558,8 @@ async function viewBusinessDashboard(container) {
 
             <div class="panel-card panel-card--full" id="biz-empty-hints" style="display:none;">
                 <div class="panel-header">
-                    <h3>Hızlı Başlangıç</h3>
-                    <span class="panel-sub">Paneli dolduralım</span>
+                    <h3>${t('bo.quick_start')}</h3>
+                    <span class="panel-sub">${t('bo.fill_panel')}</span>
                 </div>
                 <div class="panel-body">
                     <div class="empty-hints">
@@ -3567,8 +3567,8 @@ async function viewBusinessDashboard(container) {
                             <p style="margin:0 0 0.75rem; color: var(--text-muted);">İlk adımları tamamladıkça burası otomatik dolacak.</p>
                             <ul class="empty-hints__list">
                                 <li><a href="#business-services">En az 1 hizmet ekle</a></li>
-                                <li><a href="#business-reservations">İlk rezervasyonunu al</a> veya <button class="linklike" onclick="window.showManualReservationModal()">manuel ekle</button></li>
-                                <li><a href="#business-staff">Personel ekle</a> (opsiyonel)</li>
+                                <li><a href="#business-reservations">${t('staff.first_reservation')}</a> veya <button class="linklike" onclick="window.showManualReservationModal()">manuel ekle</button></li>
+                                <li><a href="#business-staff">${t('bo.add_staff')}</a> (opsiyonel)</li>
                             </ul>
                         </div>
                         <div class="empty-hints__actions">
@@ -3602,10 +3602,10 @@ async function viewBusinessDashboard(container) {
 
         const cards = [
             { label: 'Toplam Rezervasyon', value: total, hint: 'Genel' },
-            { label: 'Beklemede', value: pending, hint: 'Yanıt bekliyor' },
-            { label: 'Onaylandı', value: approved, hint: `Onay oranı %${approvalRate}` },
-            { label: 'Reddedildi', value: rejected, hint: 'İptal/ret' },
-            { label: 'Hizmet', value: services, hint: services ? 'Aktif' : 'Henüz yok' },
+            { label: t('status.pending_label'), value: pending, hint: t('status.waiting_response') },
+            { label: t('status.approved_label'), value: approved, hint: `${t('status.approval_rate')} %${approvalRate}` },
+            { label: t('status.rejected_label'), value: rejected, hint: t('status.cancel_or_reject') },
+            { label: t('status.service_label'), value: services, hint: services ? t('status.active') : t('status.none_yet') },
             { label: 'Personel', value: staff, hint: staff ? 'Aktif' : 'Opsiyonel' }
         ];
         kpiEl.innerHTML = cards.map(c => `
@@ -3625,7 +3625,7 @@ async function viewBusinessDashboard(container) {
             new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Beklemede', 'Onaylandı', 'Reddedildi'],
+                    labels: [t('status.pending_label'), t('status.approved_label'), t('status.rejected_label')],
                     datasets: [{
                         data: hasData ? chartData : [1],
                         backgroundColor: hasData ? ['#f59e0b', '#10b981', '#ef4444'] : ['#e5e7eb'],
@@ -3695,7 +3695,7 @@ async function viewBusinessDashboard(container) {
                     <div class="empty-mini__sub">Manuel ekleyebilir veya müşterilerden rezervasyon alabilirsiniz.</div>
                     <div style="margin-top:0.9rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
                         <button class="btn btn-primary" onclick="window.showManualReservationModal()">+ Manuel Rezervasyon</button>
-                        <a class="btn btn-outline" href="#business-services">Hizmetleri düzenle</a>
+                        <a class="btn btn-outline" href="#business-services">${t('bo.edit_services')}</a>
                     </div>
                 </div>
             `;
@@ -3724,7 +3724,7 @@ async function viewBusinessDashboard(container) {
         if (emptyHintsEl) emptyHintsEl.style.display = showHints ? 'block' : 'none';
     } catch (e) {
         showToast(e.message, 'error');
-        if (kpiEl) kpiEl.innerHTML = `<div class="loading-row" style="grid-column:1/-1; color:var(--error);">Veriler yüklenemedi: ${safe(e.message)}</div>`;
+        if (kpiEl) kpiEl.innerHTML = `<div class="loading-row" style="grid-column:1/-1; color:var(--error);">${t('status.failed_to_load')}: ${safe(e.message)}</div>`;
         if (todayEl) todayEl.innerHTML = `<p style="color:var(--error);">${safe(e.message)}</p>`;
         if (recentEl) recentEl.innerHTML = `<p style="color:var(--error);">${safe(e.message)}</p>`;
     }
@@ -3774,26 +3774,26 @@ window.loadBusinessServices = async () => {
 
 window.showBizServiceFormModal = async (service = null) => {
     const isEdit = !!service;
-    const title = isEdit ? 'Hizmet Düzenle' : 'Yeni Hizmet Ekle';
+    const title = isEdit ? t('svc_form.title_edit') : t('svc_form.title_new');
 
     const html = `
         <form id="biz-service-form">
-            <div class="form-group"><label>Hizmet Adı</label><input type="text" id="bsvc-name" value="${service?.name || ''}" required></div>
-            <div class="form-group"><label>Açıklama</label><textarea id="bsvc-desc">${service?.description || ''}</textarea></div>
-            <div class="form-group"><label>Fiyat (₺)</label><input type="number" step="0.01" id="bsvc-price" value="${service?.price || ''}" placeholder="Örn: 150.00"></div>
+            <div class="form-group"><label>${t('svc_form.name')}</label><input type="text" id="bsvc-name" value="${service?.name || ''}" required></div>
+            <div class="form-group"><label>${t('svc_form.description')}</label><textarea id="bsvc-desc">${service?.description || ''}</textarea></div>
+            <div class="form-group"><label>${t('svc_form.price')}</label><input type="number" step="0.01" id="bsvc-price" value="${service?.price || ''}" placeholder="${t('svc_form.price_placeholder')}"></div>
             <div class="form-group"><label>Kategori</label>
                 <select id="bsvc-cat" class="pretty-select" onchange="toggleHotelFields(this.value)">
-                    <option value="hotel" ${service?.category === 'hotel' ? 'selected' : ''}>Otel Odası</option>
-                    <option value="appointment" ${service?.category === 'appointment' ? 'selected' : ''}>Randevu Hizmeti</option>
+                    <option value="hotel" ${service?.category === 'hotel' ? 'selected' : ''}>${t('svc_form.cat_hotel')}</option>
+                    <option value="appointment" ${service?.category === 'appointment' ? 'selected' : ''}>${t('svc_form.cat_appointment')}</option>
                 </select>
             </div>
             <div id="hotel-fields" style="display: ${service?.category === 'appointment' ? 'none' : 'block'}">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group"><label>Oda No</label><input type="text" id="bsvc-room-num" value="${service?.room_number || ''}"></div>
-                    <div class="form-group"><label>Oda Tipi</label><input type="text" id="bsvc-room-type" value="${service?.room_type || ''}"></div>
+                    <div class="form-group"><label>${t('svc_form.room_number')}</label><input type="text" id="bsvc-room-num" value="${service?.room_number || ''}"></div>
+                    <div class="form-group"><label>${t('svc_form.room_type')}</label><input type="text" id="bsvc-room-type" value="${service?.room_type || ''}"></div>
                 </div>
             </div>
-            <div class="form-group"><label>Görsel URL</label><input type="text" id="bsvc-image" value="${service?.image_url || ''}"></div>
+            <div class="form-group"><label>${t('svc_form.image_url')}</label><input type="text" id="bsvc-image" value="${service?.image_url || ''}"></div>
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">${isEdit ? 'Kaydet' : 'Ekle'}</button>
         </form>
     `;
@@ -3898,7 +3898,7 @@ window.loadSlotsForModal = async (serviceId) => {
         }
 
         if (!slots.length) {
-            grid.innerHTML = '<p style="grid-column:1/-1; color:#999; text-align:center; padding:2rem;">Bu tarihte slot bulunamadı.</p>';
+            grid.innerHTML = `<p style="grid-column:1/-1; color:#999; text-align:center; padding:2rem;">${t('slot.no_slots_today')}</p>`;
             return;
         }
 
@@ -3937,7 +3937,7 @@ window.toggleSlotAvailability = async (slotId, serviceId, isHotel = false) => {
 };
 
 window.generateBizSlots = async (id, category = 'appointment') => {
-    const msg = "Bu hizmet için 7 günlük müsaitlik oluşturulacak.";
+    const msg = t('avail.create_7day');
     if (!confirm(msg)) return;
     try {
         await API.business.generateSlots(id);
@@ -3978,18 +3978,18 @@ window.showAvailabilityManager = async (serviceId, serviceName) => {
                 <p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
                     Toplam ${summary.total_slots} gün, ${summary.available_slots} gün müsait
                 </p>
-            ` : `<p style="color: #999;">Henüz rezervasyona açık tarih yok</p>`}
+            ` : `<p style="color: #999;">${t('hotel.no_open_dates')}</p>`}
         </div>
 
         <div style="padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 12px;">
             <h4 style="margin-bottom: 1rem;">Yeni Tarih Aralığı Ekle</h4>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div class="form-group" style="margin: 0;">
-                    <label style="font-size: 0.85rem;">Başlangıç Tarihi</label>
+                    <label style="font-size: 0.85rem;">${t('common.start_date')}</label>
                     <input type="date" id="avail-start" value="${today}" min="${today}" style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 8px;">
                 </div>
                 <div class="form-group" style="margin: 0;">
-                    <label style="font-size: 0.85rem;">Bitiş Tarihi</label>
+                    <label style="font-size: 0.85rem;">${t('common.end_date')}</label>
                     <input type="date" id="avail-end" value="${threeMonthsLater}" min="${today}" style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 8px;">
                 </div>
             </div>
@@ -4000,7 +4000,7 @@ window.showAvailabilityManager = async (serviceId, serviceName) => {
 
         <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #eee;">
 
-        <h4 style="margin-bottom: 1rem;">Takvim Görünümü</h4>
+        <h4 style="margin-bottom: 1rem;">${t('common.calendar_view')}</h4>
         <div id="hotel-calendar-grid" style="border:1px solid #e2e8f0; border-radius:12px; padding:0.75rem; background:#fff;">
             <div class="loading-row">Yükleniyor...</div>
         </div>
@@ -4028,7 +4028,7 @@ async function loadHotelCalendar(serviceId) {
         ).join('');
 
         if (!slots.length) {
-            grid.innerHTML += '<p style="grid-column:1/-1; color:#999; text-align:center; padding:2rem;">Takvimde gösterilecek tarih yok. Yukarıdan tarih aralığı ekleyin.</p>';
+            grid.innerHTML += `<p style="grid-column:1/-1; color:#999; text-align:center; padding:2rem;">${t('slot.no_dates_in_calendar')}</p>`;
             return;
         }
 
@@ -4221,24 +4221,24 @@ window.loadBusinessStaff = async () => {
 
 window.showBizStaffFormModal = (staff = null) => {
     const isEdit = !!staff;
-    const title = isEdit ? 'Personel Düzenle' : 'Yeni Personel Ekle';
+    const title = isEdit ? t('staff_form.title_edit') : t('staff_form.title_new');
     
     const phoneVal = staff?.phone
         ? formatProfilePhoneDigits(parseProfilePhoneToDigits(staff.phone)).replace(/^0/, '')
         : '';
     const html = `
         <form id="biz-staff-form">
-            <div class="form-group"><label>Ad Soyad</label><input type="text" id="bstaff-name" value="${staff?.name || ''}" required></div>
+            <div class="form-group"><label>${t('user_form.full_name')}</label><input type="text" id="bstaff-name" value="${staff?.name || ''}" required></div>
             <div class="form-group"><label>E-posta</label><input type="email" id="bstaff-email" value="${staff?.email || ''}" required></div>
             <div class="form-group">
-                <label>Cep telefonu</label>
+                <label>${t('user_form.phone')}</label>
                 <div class="phone-input-row">
                     <span class="phone-input-prefix" aria-hidden="true">+90</span>
                     <input type="tel" id="bstaff-phone" class="phone-input-field" inputmode="numeric" autocomplete="tel-national" ${isEdit ? '' : 'required'} placeholder="5XX XXX XX XX" value="${phoneVal}">
                 </div>
             </div>
             <div class="form-group"><label>Şifre ${isEdit ? '<span style="color:#999;font-size:0.8rem;">(boş bırakılabilir)</span>' : ''}</label><input type="password" id="bstaff-pass" ${isEdit ? '' : 'required'}></div>
-            ${!isEdit ? `<div class="form-group"><label>Şifre tekrar</label><input type="password" id="bstaff-pass2" required></div>` : ''}
+            ${!isEdit ? `<div class="form-group"><label>${t('staff_form.password_repeat')}</label><input type="password" id="bstaff-pass2" required></div>` : ''}
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">${isEdit ? 'Kaydet' : 'Ekle'}</button>
         </form>
     `;
@@ -4498,9 +4498,9 @@ async function viewBusinessSettings(container) {
         const business = await API.business.getMe();
         const days = [
             { key: 'mon', label: 'Pazartesi' },
-            { key: 'tue', label: 'Salı' },
-            { key: 'wed', label: 'Çarşamba' },
-            { key: 'thu', label: 'Perşembe' },
+            { key: 'tue', label: t('day.tue') },
+            { key: 'wed', label: t('day.wed') },
+            { key: 'thu', label: t('day.thu') },
             { key: 'fri', label: 'Cuma' },
             { key: 'sat', label: 'Cumartesi' },
             { key: 'sun', label: 'Pazar' }
@@ -4510,14 +4510,14 @@ async function viewBusinessSettings(container) {
         document.getElementById('biz-settings-content').innerHTML = `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
                 <div class="service-card" style="padding: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem;">Genel Bilgiler</h3>
+                    <h3 style="margin-bottom: 1.5rem;">${t('biz_form.general_info')}</h3>
                     <form id="biz-info-form">
                         <div class="form-group">
                             <label>İşletme Adı</label>
                             <input type="text" id="biz-name" value="${business.name || ''}" required>
                         </div>
                         <div class="form-group">
-                            <label>Açıklama</label>
+                            <label>${t('svc_form.description')}</label>
                             <textarea id="biz-desc" rows="3">${business.description || ''}</textarea>
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -4531,7 +4531,7 @@ async function viewBusinessSettings(container) {
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Açık Adres</label>
+                            <label>${t('biz_form.full_address')}</label>
                             <input type="text" id="biz-address" value="${business.address || ''}">
                         </div>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -4550,7 +4550,7 @@ async function viewBusinessSettings(container) {
                 </div>
 
                 <div class="service-card" style="padding: 2rem;">
-                    <h3 style="margin-bottom: 1.5rem;">Çalışma Saatleri</h3>
+                    <h3 style="margin-bottom: 1.5rem;">${t('biz.opening_hours')}</h3>
                     <form id="biz-hours-form">
                         ${days.map(d => {
                             const dayData = wh[d.key] || null;
@@ -4783,11 +4783,11 @@ async function viewStaffReservations(container) {
                     <div style="color:#f59e0b; font-size:1.5rem;">${'★'.repeat(rv.rating)}${'☆'.repeat(5 - rv.rating)}</div>
                     <p style="margin-top:0.5rem;">${rv.comment || '<i style="color:#999">Yorum yok.</i>'}</p>
                 </div>
-                ${rv.staff_reply ? `<div style="background:#f0fdf4; padding:1rem; border-radius:8px; border-left:4px solid #10b981;"><strong>Yanıtınız:</strong> ${rv.staff_reply}</div>` : `
+                ${rv.staff_reply ? `<div style="background:#f0fdf4; padding:1rem; border-radius:8px; border-left:4px solid #10b981;"><strong>${t('staff.your_reply')}</strong> ${rv.staff_reply}</div>` : `
                 <div class="form-group" style="margin-top:1rem;">
                     <label>Yanıtınız</label>
-                    <textarea id="staff-reply" rows="3" placeholder="Müşteriye yanıt yazın..."></textarea>
-                    <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window.submitReply(${rv.id})">Yanıtı Gönder</button>
+                    <textarea id="staff-reply" rows="3" placeholder="${t('staff.reply_placeholder')}"></textarea>
+                    <button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="window.submitReply(${rv.id})">${t('staff.send_reply')}</button>
                 </div>`}
             `);
             window.submitReply = async (reviewId) => {
@@ -4865,10 +4865,10 @@ window.showStaffAvailabilityManager = async (serviceId, serviceName) => {
                 <p style="font-size: 0.85rem; color: #666; margin-top: 0.3rem;">
                     Toplam ${summary.total_slots} gün, ${summary.available_slots} gün müsait
                 </p>
-            ` : `<p style="color: #999;">Henüz rezervasyona açık tarih yok</p>`}
+            ` : `<p style="color: #999;">${t('hotel.no_open_dates')}</p>`}
         </div>
 
-        <h4 style="margin-bottom: 1rem;">Takvim Görünümü</h4>
+        <h4 style="margin-bottom: 1rem;">${t('common.calendar_view')}</h4>
         <div id="staff-hotel-calendar" style="border:1px solid #e2e8f0; border-radius:12px; padding:0.75rem; background:#fff;">
             <div class="loading-row">Yükleniyor...</div>
         </div>
@@ -5111,7 +5111,7 @@ window.handleImageUpload = async (e) => {
             overlay.classList.add('has-image');
             showToast(t('toast.image_uploaded'));
         } else {
-            showToast(data.msg || "Yükleme hatası", 'error');
+            showToast(data.msg || t('toast.upload_error'), 'error');
         }
     } catch (err) {
         showToast(t('toast.server_error'), 'error');

@@ -88,7 +88,7 @@ CUSTOMER_TOOLS = [
         "parameters": {
             "type": "object",
             "properties": {
-                "business_id": {"type": "integer", "description": "ID of the business"}
+                "business_id": {"type": "string", "description": "ID of the business as string"}
             },
             "required": ["business_id"]
         }
@@ -99,7 +99,7 @@ CUSTOMER_TOOLS = [
         "parameters": {
             "type": "object",
             "properties": {
-                "business_id": {"type": "integer"},
+                "business_id": {"type": "string"},
                 "check_in": {"type": "string", "description": "YYYY-MM-DD"},
                 "check_out": {"type": "string", "description": "YYYY-MM-DD"}
             },
@@ -117,7 +117,7 @@ CUSTOMER_TOOLS = [
         "parameters": {
             "type": "object",
             "properties": {
-                "business_id": {"type": "integer"},
+                "business_id": {"type": "string"},
                 "limit": {"type": "integer", "description": "default 5"}
             },
             "required": ["business_id"]
@@ -183,6 +183,15 @@ def tool_search_businesses(query=None, city=None, district=None, category=None):
 
 
 def tool_get_business_details(business_id):
+    if isinstance(business_id, str):
+        if business_id.isdigit():
+            business_id = int(business_id)
+        else:
+            biz = Business.query.filter(Business.name.ilike(f"%{business_id}%")).first()
+            if biz:
+                business_id = biz.id
+            else:
+                return {"error": f"Business '{business_id}' not found."}
     b = Business.query.get(business_id)
     if not b:
         return {"error": f"Business with id={business_id} not found."}
@@ -208,6 +217,17 @@ def tool_get_business_details(business_id):
 
 
 def tool_check_room_availability(business_id, check_in, check_out):
+    # AI sometimes passes business name instead of ID — try to resolve it
+    if isinstance(business_id, str):
+        if business_id.isdigit():
+            business_id = int(business_id)
+        else:
+            # Try to find business by name
+            biz = Business.query.filter(Business.name.ilike(f"%{business_id}%")).first()
+            if biz:
+                business_id = biz.id
+            else:
+                return {"error": f"Business '{business_id}' not found. Please use search_businesses first to find the business ID."}
     try:
         ci = datetime.strptime(check_in, "%Y-%m-%d").date()
         co = datetime.strptime(check_out, "%Y-%m-%d").date()
@@ -390,6 +410,7 @@ def build_system_prompt(role, lang, user_name=None):
 Bugünün tarihi: {today}.
 
 ÇOK ÖNEMLİ KURALLAR:
+0. ASLA <function=...> gibi metin yazma! Bunlar tool call'larıdır, metin değildir. Tool kullanmak istiyorsan API'nin tool_calls özelliğini kullan, asla cevap metnine yazma. Eğer veri çekmek istiyorsan o tool'u CAĞIR, cevap metninde fonksiyon ismi geçirmek YASAK.
 1. Eğer kullanıcı sadece selam veriyorsa ("merhaba", "selam", "hey", "naber" gibi), SEN DE selamlaşma cevabı ver. Tool çağırma. Örnek: "Merhaba! Size nasıl yardımcı olabilirim?"
 2. Eğer kullanıcı sadece teşekkür ediyorsa ("teşekkürler", "sağol", "ok" gibi), kibar bir şekilde "Rica ederim, başka sorunuz olursa burada olacağım." de. Tool çağırma.
 3. Eğer kullanıcı net bir soru sorduysa (otel ara, rezervasyonum nerede, vs.), o ZAMAN tool kullan ve veritabanından gerçek veri çek.
@@ -402,6 +423,7 @@ Yanıtlarını Türkçe ver. Cevapları kısa tut (1-3 cümle). Tarih belirtilme
 Today's date: {today}.
 
 CRITICAL RULES:
+0. NEVER write text like <function=...> in your response! These are tool calls, not text. If you want to use a tool, use the API's tool_calls feature. Never write function names as text in your reply. If you need data, CALL the tool — don't mention its name in the chat.
 1. If the user just greets you ("hi", "hello", "hey"), GREET them back. Do NOT call any tools. Example: "Hi! How can I help you today?"
 2. If the user just thanks you ("thanks", "thank you", "ok"), respond politely like "You're welcome! Let me know if you need anything else." Do NOT call tools.
 3. ONLY call tools when the user asks a clear, specific question (search for hotels, my reservations, etc.).
@@ -459,7 +481,7 @@ def chat(message, history, user, lang="tr"):
     system_prompt = build_system_prompt(role, lang, user_name)
 
     messages = [{"role": "system", "content": system_prompt}]
-    for m in (history or [])[-10:]:
+    for m in (history or [])[-5:]:
         role_h = "user" if m.get("role") == "user" else "assistant"
         messages.append({"role": role_h, "content": m.get("text", "")})
     messages.append({"role": "user", "content": message})
@@ -473,7 +495,7 @@ def chat(message, history, user, lang="tr"):
         "max_tokens": 1024,
     }
 
-    for iteration in range(5):
+    for iteration in range(8):
         status, data, err = _groq_post(payload)
 
         if err is not None or status != 200:
@@ -524,6 +546,13 @@ def chat(message, history, user, lang="tr"):
             continue
 
         reply = (msg.get("content") or "").strip()
+        # Strip malformed function-call syntax that Llama sometimes writes as text
+        import re as _re
+        reply = _re.sub(r'<function=[^>]*>.*?</function>', '', reply, flags=_re.DOTALL)
+        reply = _re.sub(r'<function=[^>]*>[^<]*', '', reply)
+        reply = _re.sub(r'\s+', ' ', reply).strip()
+        if len(reply) < 10:
+            reply = "Hangi tarihler ve hangi şehir için otel arıyorsunuz?" if lang == "tr" else "What dates and city are you looking for a hotel in?"
         if not reply:
             reply = "Sorry, I couldn't generate a response. Please try again." if lang == "en" \
                 else "Üzgünüm, bir cevap oluşturamadım. Lütfen tekrar deneyin."
