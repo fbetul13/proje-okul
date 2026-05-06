@@ -124,10 +124,14 @@ class ReservationService:
             try:
                 from app.services.mail_service import send_reservation_confirmed, send_reservation_rejected
                 user_email = reservation.user.email
+                # Detect lang from note prefix saved during creation
+                mail_lang = 'tr'
+                if reservation.note and '[lang:en]' in reservation.note:
+                    mail_lang = 'en'
                 if status == 'approved':
-                    send_reservation_confirmed(user_email, reservation)
+                    send_reservation_confirmed(user_email, reservation, lang=mail_lang)
                 else:
-                    send_reservation_rejected(user_email, reservation)
+                    send_reservation_rejected(user_email, reservation, lang=mail_lang)
             except Exception as e:
                 print(f"Mail bildirim hatası: {e}")
 

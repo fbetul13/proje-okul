@@ -155,10 +155,22 @@ const API = {
             const qs = params.toString();
             return API.request(`/customer/services/${serviceId}/availability${qs ? `?${qs}` : ''}`);
         },
-        createReservation: (data) => API.request('/customer/reservations', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        }),
+        createReservation: (data) => {
+            // Auto-prefix note with [lang:en] when UI is in English so backend mail uses correct language
+            try {
+                const lang = (window.i18n && window.i18n.getCurrentLang && window.i18n.getCurrentLang()) || 'tr';
+                if (lang === 'en') {
+                    const existing = data.note || '';
+                    if (!existing.includes('[lang:en]')) {
+                        data = { ...data, note: '[lang:en] ' + existing };
+                    }
+                }
+            } catch (e) {}
+            return API.request('/customer/reservations', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        },
         getMyReservations: (page = 1) => API.request(`/customer/reservations?page=${page}`),
         cancelReservation: (id) => API.request(`/customer/reservations/${id}/cancel`, { method: 'POST' }),
         modifyReservation: (id, data) => API.request(`/customer/reservations/${id}`, {
