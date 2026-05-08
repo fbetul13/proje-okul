@@ -247,8 +247,8 @@ def tool_check_room_availability(business_id, check_in, check_out):
         conflict = Reservation.query.filter(
             Reservation.service_id == room.id,
             Reservation.status.in_(["pending", "approved"]),
-            Reservation.check_in < co,
-            Reservation.check_out > ci
+            Reservation.check_in_date < co,
+            Reservation.check_out_date > ci
         ).first()
         if not conflict:
             available.append({
@@ -499,7 +499,26 @@ def chat(message, history, user, lang="tr"):
         status, data, err = _groq_post(payload)
 
         if err is not None or status != 200:
-            return {"error": f"AI service error ({status}): {err or 'unknown'}", "reply": None}
+            # Llama bazen <function=name {...}> seklinde metin uretip Groq'a 400 verdiriyor.
+            # Bu durumda son assistant mesajini silip system reminder ile retry et.
+            if status == 400 and err and 'tool_use_failed' in err:
+                logger.warning("Llama produced malformed function-call text; retrying with stronger reminder")
+                # Conversation'in son user mesajini bul ve system reminder ekle
+                payload['messages'].append({
+                    "role": "system",
+                    "content": (
+                        "CRITICAL CORRECTION: Your previous attempt produced invalid function-call text. "
+                        "DO NOT write '<function=name {...}>' as text in your reply. "
+                        "Instead, use the API's tool_calls feature properly. "
+                        "If you want to call a tool, the system will detect it from your structured output - "
+                        "you only need to think and then call. Do not type function names in chat."
+                    )
+                })
+                status, data, err = _groq_post(payload)
+                if err is not None or status != 200:
+                    return {"error": f"AI service error ({status}): {err or 'unknown'}", "reply": None}
+            else:
+                return {"error": f"AI service error ({status}): {err or 'unknown'}", "reply": None}
 
         if not data:
             return {"error": "Empty response from AI", "reply": None}
