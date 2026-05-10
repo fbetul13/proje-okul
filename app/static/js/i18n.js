@@ -677,6 +677,33 @@
             'biz_form.general_info': 'Genel Bilgiler',
             'biz_form.full_address': 'Açık Adres',
             'staff.send_reply': 'Yanıtı Gönder',
+
+            // -- amenities & details --
+            'biz.view_details': 'Detayları Gör',
+            'amenities.title': 'Oda Özellikleri',
+            'amenities.wifi': 'Ücretsiz Wi-Fi',
+            'amenities.ac': 'Klima',
+            'amenities.breakfast': 'Kahvaltı Dahil',
+            'amenities.minibar': 'Mini Bar',
+            'amenities.tv': 'LCD TV',
+            'amenities.bathroom': 'Özel Banyo',
+            'amenities.parking': 'Otopark',
+            'amenities.pool': 'Havuz',
+
+            // -- amenities --
+            'amenities.daily_cleaning': 'Günlük Temizlik',
+            'amenities.city_view': 'Şehir Manzaralı',
+            'amenities.living_room': 'Oturma Odası',
+            'amenities.premium_bedding': 'Premium Yatak Takımı',
+            'amenities.bathrobe': 'Bornoz ve Terlik',
+            'amenities.welcome_drink': 'Hoşgeldin Şampanyası',
+            'amenities.crib': 'Bebek Yatağı',
+            'amenities.family_breakfast': 'Aile Kahvaltısı',
+            'amenities.kids_area': 'Çocuk Oyun Alanı',
+            'amenities.butler': 'Özel Butler Hizmeti',
+            'amenities.private_pool': 'Özel Havuz Erişimi',
+            'amenities.spa_voucher': 'Spa Hediye Çeki',
+            'amenities.airport_transfer': 'Havalimanı Transferi',
         },
         en: {
             // Language
@@ -1337,6 +1364,33 @@
             'biz_form.general_info': 'General Information',
             'biz_form.full_address': 'Full Address',
             'staff.send_reply': 'Send Reply',
+
+            // -- amenities & details --
+            'biz.view_details': 'View Details',
+            'amenities.title': 'Room Amenities',
+            'amenities.wifi': 'Free Wi-Fi',
+            'amenities.ac': 'Air Conditioning',
+            'amenities.breakfast': 'Breakfast Included',
+            'amenities.minibar': 'Mini Bar',
+            'amenities.tv': 'LCD TV',
+            'amenities.bathroom': 'Private Bathroom',
+            'amenities.parking': 'Free Parking',
+            'amenities.pool': 'Swimming Pool',
+
+            // -- amenities --
+            'amenities.daily_cleaning': 'Daily Cleaning',
+            'amenities.city_view': 'City View',
+            'amenities.living_room': 'Separate Living Room',
+            'amenities.premium_bedding': 'Premium Bedding',
+            'amenities.bathrobe': 'Bathrobe & Slippers',
+            'amenities.welcome_drink': 'Welcome Champagne',
+            'amenities.crib': 'Baby Crib',
+            'amenities.family_breakfast': 'Family Breakfast',
+            'amenities.kids_area': 'Kids Play Area',
+            'amenities.butler': 'Private Butler Service',
+            'amenities.private_pool': 'Private Pool Access',
+            'amenities.spa_voucher': 'Spa Voucher',
+            'amenities.airport_transfer': 'Airport Transfer',
         },
     };
 

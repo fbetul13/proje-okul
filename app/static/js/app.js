@@ -1635,6 +1635,22 @@ window.paintApptAvailCalendar = () => {
 window._roomBookingData = { roomId: null, price: 0, bookedRanges: [] };
 window._roomModalCtx = { mode: 'create', reservationId: null, onSuccess: null };
 
+
+// Returns amenity i18n keys based on room type. Tiered: higher tiers include lower-tier amenities.
+function getRoomAmenities(roomType) {
+    const t = (roomType || '').toLowerCase();
+    const standard = ['amenities.wifi', 'amenities.ac', 'amenities.tv', 'amenities.bathroom', 'amenities.daily_cleaning'];
+    const deluxeExtras = ['amenities.breakfast', 'amenities.minibar', 'amenities.parking', 'amenities.city_view'];
+    const suiteExtras = ['amenities.living_room', 'amenities.premium_bedding', 'amenities.bathrobe', 'amenities.welcome_drink'];
+    const familyExtras = ['amenities.crib', 'amenities.family_breakfast', 'amenities.kids_area'];
+    const presidentialExtras = ['amenities.butler', 'amenities.private_pool', 'amenities.spa_voucher', 'amenities.airport_transfer'];
+    if (t.includes('presidential') || t.includes('baskanl')) return [...standard, ...deluxeExtras, ...suiteExtras, ...presidentialExtras];
+    if (t.includes('suite') || t.includes('suit')) return [...standard, ...deluxeExtras, ...suiteExtras];
+    if (t.includes('family') || t.includes('aile')) return [...standard, ...familyExtras];
+    if (t.includes('deluxe') || t.includes('luks')) return [...standard, ...deluxeExtras];
+    return standard;
+}
+
 window.openRoomBookingModal = async (roomId, roomName, roomType, price, ctx = {}) => {
     const mode = ctx.mode === 'modify' ? 'modify' : 'create';
     window._roomModalCtx = {
@@ -1705,6 +1721,10 @@ window.openRoomBookingModal = async (roomId, roomName, roomType, price, ctx = {}
             <input type="hidden" id="modal-check-in" value="">
             <input type="hidden" id="modal-check-out" value="">
             <div id="modal-room-calendar">${t('modal.loading')}</div>
+            <p style="font-size: 0.78rem; color: #888; margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px dashed #e5e7eb; line-height: 1.5;">
+                <strong style="color: #555;">${t('amenities.title')}:</strong>
+                ${getRoomAmenities(roomType).map(a => t(a)).join(' &middot; ')}
+            </p>
         </div>
         
         ${guestsBlock}
