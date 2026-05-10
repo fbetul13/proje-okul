@@ -704,6 +704,12 @@
             'amenities.private_pool': 'Özel Havuz Erişimi',
             'amenities.spa_voucher': 'Spa Hediye Çeki',
             'amenities.airport_transfer': 'Havalimanı Transferi',
+
+            // -- cancellation policy --
+            'res.cancel_free': 'Ücretsiz iptal (3+ gün önce).',
+            'res.cancel_fee_20': 'İptal ücreti: %20 kesinti.',
+            'res.cancel_fee_50': 'Bugün iptal: %50 kesinti uygulanır.',
+            'res.cancel_too_late': 'Bu rezervasyon iptal edilemez (geçmiş tarih).',
         },
         en: {
             // Language
@@ -1391,6 +1397,12 @@
             'amenities.private_pool': 'Private Pool Access',
             'amenities.spa_voucher': 'Spa Voucher',
             'amenities.airport_transfer': 'Airport Transfer',
+
+            // -- cancellation policy --
+            'res.cancel_free': 'Free cancellation (3+ days before).',
+            'res.cancel_fee_20': 'Cancellation fee: 20% deduction.',
+            'res.cancel_fee_50': 'Same-day cancellation: 50% fee applies.',
+            'res.cancel_too_late': 'This reservation cannot be cancelled (past date).',
         },
     };
 

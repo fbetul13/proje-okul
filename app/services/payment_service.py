@@ -147,3 +147,24 @@ def is_session_paid(session_data):
     if not session_data:
         return False
     return session_data.get("payment_status") == "paid"
+
+
+def refund_payment(reservation, refund_amount=None):
+    """Issue a Stripe refund. Optional partial refund_amount in TRY."""
+    if not is_configured():
+        return None, "Stripe is not configured"
+    if not reservation.stripe_session_id:
+        return None, "Reservation was not paid via Stripe"
+    session_data, err = retrieve_session(reservation.stripe_session_id)
+    if err or not session_data:
+        return None, f"Could not retrieve Stripe session: {err}"
+    payment_intent = session_data.get("payment_intent")
+    if not payment_intent:
+        return None, "No payment_intent found on session"
+    params = {"payment_intent": payment_intent}
+    if refund_amount is not None:
+        params["amount"] = int(round(float(refund_amount) * 100))
+    data, err = _stripe_request("refunds", "POST", params)
+    if err:
+        return None, err
+    return data, None

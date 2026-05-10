@@ -267,11 +267,15 @@ def my_reservations():
 @customer_bp.route('/reservations/<int:res_id>/cancel', methods=['POST'])
 @jwt_required()
 def cancel_reservation(res_id):
-    from app.models.business import Business
     from app.models.timeslot import TimeSlot
-    from datetime import datetime, timedelta
+    from datetime import datetime, timedelta, date as _date
     
     user_id = get_jwt_identity()
+    try:
+        user_id = int(user_id)
+    except (ValueError, TypeError):
+        pass
+    
     reservation = Reservation.query.filter_by(id=res_id, user_id=user_id).first()
     
     if not reservation:
@@ -280,20 +284,47 @@ def cancel_reservation(res_id):
     if reservation.status == 'rejected':
         return jsonify({"msg": "Bu rezervasyon zaten iptal edilmiş"}), 400
     
-    business = reservation.service.business
-    cancellation_hours = business.cancellation_hours if business else 24
-    
-    reservation_datetime = None
+    # Tiered cancellation policy: 3+ days free, 1-2 days 20%, same day 50%
+    today = _date.today()
+    target_date = None
     if reservation.reservation_type == 'hotel' and reservation.check_in_date:
-        reservation_datetime = combine_tr(reservation.check_in_date, datetime.min.time())
+        target_date = reservation.check_in_date
     elif reservation.slot:
-        reservation_datetime = combine_tr(reservation.slot.date, reservation.slot.start_time)
+        target_date = reservation.slot.date
     
-    can_cancel_free = True
-    if reservation_datetime:
-        deadline = reservation_datetime - timedelta(hours=cancellation_hours)
-        if now_tr() > deadline:
-            can_cancel_free = False
+    penalty_percent = 0
+    days_until = None
+    if target_date:
+        days_until = (target_date - today).days
+        if days_until < 0:
+            return jsonify({"msg": "Bu rezervasyon iptal edilemez (geçmiş tarih)."}), 400
+        elif days_until == 0:
+            penalty_percent = 50
+        elif days_until <= 2:
+            penalty_percent = 20
+        else:
+            penalty_percent = 0
+    
+    # Stripe refund if paid
+    refund_amount = None
+    refund_status = "N/A"
+    if getattr(reservation, 'payment_status', None) == 'paid' and reservation.stripe_session_id:
+        try:
+            from app.services.payment_service import calculate_amount, refund_payment
+            paid_amount = calculate_amount(reservation) or 0
+            refund_amount = paid_amount * (100 - penalty_percent) / 100.0
+            if refund_amount > 0:
+                refund_data, refund_err = refund_payment(reservation, refund_amount)
+                if refund_err:
+                    refund_status = f"FAILED: {refund_err}"
+                    import logging
+                    logging.error("Stripe refund failed for reservation %s: %s", res_id, refund_err)
+                else:
+                    refund_status = f"REFUNDED: {refund_amount:.2f} TRY"
+        except Exception as e:
+            import logging
+            logging.exception("Refund attempt failed")
+            refund_status = f"ERROR: {str(e)}"
     
     if reservation.slot:
         reservation.slot.is_available = True
@@ -301,11 +332,25 @@ def cancel_reservation(res_id):
     reservation.status = 'rejected'
     db.session.commit()
     
-    fee_info = ""
-    if not can_cancel_free and business and business.cancellation_fee_percent > 0:
-        fee_info = f" (Geç iptal ücreti: %{business.cancellation_fee_percent})"
+    if penalty_percent == 0:
+        msg = "Rezervasyon ücretsiz olarak iptal edildi."
+    elif penalty_percent == 20:
+        msg = f"Rezervasyon iptal edildi. {days_until} gün kala iptal nedeniyle %20 kesinti uygulandı."
+    else:
+        msg = f"Rezervasyon iptal edildi. Aynı gün iptal nedeniyle %50 kesinti uygulandı."
     
-    return jsonify({"msg": f"Rezervasyon iptal edildi{fee_info}"}), 200
+    if refund_amount and refund_status.startswith("REFUNDED"):
+        msg += f" İade tutarı: {refund_amount:.2f} TL Stripe üzerinden iade edildi."
+    elif refund_status.startswith("FAILED") or refund_status.startswith("ERROR"):
+        msg += " (İade işlemi sırasında bir sorun oluştu, lütfen iletişime geçin.)"
+    
+    return jsonify({
+        "msg": msg,
+        "penalty_percent": penalty_percent,
+        "refund_amount": refund_amount,
+        "refund_status": refund_status,
+        "days_until": days_until
+    }), 200
 
 
 @customer_bp.route('/reservations/<int:res_id>', methods=['PUT'])

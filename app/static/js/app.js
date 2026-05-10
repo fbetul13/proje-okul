@@ -2743,6 +2743,11 @@ async function viewMyReservations(container) {
                                         <button type="button" class="btn btn-sm cust-res-btn cust-res-btn--danger" onclick="window.cancelBooking(${r.id})">${t('res.cancel')}</button>
                                     </div>
                                 ` : ''}
+                                ${r.status === 'approved' ? `
+                                    <div class="cust-res-btnrow">
+                                        <button type="button" class="btn btn-sm cust-res-btn cust-res-btn--danger" onclick="window.cancelBooking(${r.id})">${t('res.cancel')}</button>
+                                    </div>
+                                ` : ''}
                                 ${r.status === 'approved' ? `<button type="button" class="btn btn-sm cust-res-btn cust-res-btn--ghost" onclick="window.showReviewModal(${r.id}, '${r.service_name.replace(/'/g,"\\'")}')">${t('res.review')}</button>` : ''}
                             </div>
                         </div>
@@ -2752,7 +2757,34 @@ async function viewMyReservations(container) {
             </div>
         `;
         window.cancelBooking = async (id) => {
-            if (confirm(t('res.confirm_cancel'))) {
+            const r = (Array.isArray(window._myReservations) ? window._myReservations : [])
+                .find(x => x.id === id);
+            
+            let penaltyMsg = '';
+            
+            if (r && r.check_in_date) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const checkIn = new Date(r.check_in_date);
+                checkIn.setHours(0, 0, 0, 0);
+                const daysUntil = Math.ceil((checkIn - today) / (1000 * 60 * 60 * 24));
+                
+                if (daysUntil >= 3) {
+                    penaltyMsg = t('res.cancel_free') || 'Ucretsiz iptal (3+ gun once).';
+                } else if (daysUntil >= 1) {
+                    penaltyMsg = (t('res.cancel_fee_20') || 'Iptal ucreti: %20 kesinti.') + ' (' + daysUntil + ' gun kala)';
+                } else if (daysUntil === 0) {
+                    penaltyMsg = t('res.cancel_fee_50') || 'Bugun iptal: %50 kesinti uygulanir.';
+                } else {
+                    showToast(t('res.cancel_too_late') || 'Bu rezervasyon iptal edilemez (gecmis tarih).', 'error');
+                    return;
+                }
+            }
+            
+            const baseConfirm = t('res.confirm_cancel');
+            const fullMsg = penaltyMsg ? baseConfirm + '\n\n' + penaltyMsg : baseConfirm;
+            
+            if (confirm(fullMsg)) {
                 try {
                     const res = await API.customer.cancelReservation(id);
                     showToast(res.msg);
