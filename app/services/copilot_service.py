@@ -295,8 +295,8 @@ def tool_get_my_reservations(user_id):
             "service": svc.name if svc else "Unknown",
             "business": biz.name if biz else "Unknown",
             "status": r.status, "type": r.reservation_type,
-            "check_in": r.check_in.isoformat() if r.check_in else None,
-            "check_out": r.check_out.isoformat() if r.check_out else None,
+            "check_in": r.check_in_date.isoformat() if r.check_in_date else None,
+            "check_out": r.check_out_date.isoformat() if r.check_out_date else None,
         })
 
     return {"count": len(result), "reservations": result}
@@ -373,8 +373,8 @@ def tool_get_pending_reservations(business_id):
             "service": svc.name if svc else "Unknown",
             "customer": usr.name if usr else "Unknown",
             "type": r.reservation_type,
-            "check_in": r.check_in.isoformat() if r.check_in else None,
-            "check_out": r.check_out.isoformat() if r.check_out else None,
+            "check_in": r.check_in_date.isoformat() if r.check_in_date else None,
+            "check_out": r.check_out_date.isoformat() if r.check_out_date else None,
         })
 
     return {"count": len(result), "pending_reservations": result}
