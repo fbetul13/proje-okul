@@ -83,6 +83,19 @@ CUSTOMER_TOOLS = [
         }
     }},
     {"type": "function", "function": {
+        "name": "prepare_booking",
+        "description": "Prepare a hotel room reservation by directing the user to the booking page with pre-filled details. Use this when the user wants to book/reserve a specific room. Returns a navigation action - the UI will open the booking page automatically. DO NOT claim you completed the reservation - only the user can finalize it on the booking page.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "service_id": {"type": "string", "description": "The numeric ID of the hotel room (e.g. \"5\", \"23\"). Get this from check_room_availability tool first."},
+                "check_in_date": {"type": "string", "description": "Check-in date in YYYY-MM-DD format (optional)"},
+                "check_out_date": {"type": "string", "description": "Check-out date in YYYY-MM-DD format (optional)"}
+            },
+            "required": ["service_id"]
+        }
+    }},
+    {"type": "function", "function": {
         "name": "get_business_details",
         "description": "Get detailed information about a specific business including services and rating.",
         "parameters": {
@@ -385,8 +398,35 @@ def tool_get_top_services(business_id, limit=5):
     }
 
 
+
+def tool_prepare_booking(service_id, check_in_date=None, check_out_date=None):
+    """Prepare booking by returning navigation action. Does NOT create reservation."""
+    from app.models.service import Service
+    svc = Service.query.get(service_id)
+    if not svc:
+        return {"error": f"Service {service_id} not found"}
+    if svc.category != 'hotel':
+        return {"error": "Only hotel rooms can be booked via this tool"}
+    
+    # Build URL with optional date params
+    url = f"#service-detail?id={service_id}"
+    if check_in_date and check_out_date:
+        url += f"&start={check_in_date}&end={check_out_date}"
+    
+    return {
+        "action": "navigate",
+        "url": url,
+        "service_id": service_id,
+        "service_name": svc.name,
+        "room_type": svc.room_type,
+        "price": float(svc.price) if svc.price else None,
+        "message": f"Opening booking page for {svc.name}. Please review and confirm your reservation."
+    }
+
+
 TOOL_HANDLERS = {
     "search_businesses": lambda args, ctx: tool_search_businesses(**args),
+    "prepare_booking": lambda args, ctx: tool_prepare_booking(**args),
     "get_business_details": lambda args, ctx: tool_get_business_details(**args),
     "check_room_availability": lambda args, ctx: tool_check_room_availability(**args),
     "get_my_reservations": lambda args, ctx: tool_get_my_reservations(ctx.get("user_id")),
@@ -460,6 +500,11 @@ Answer in English. Keep responses brief (1-3 sentences). For relative dates like
 def chat(message, history, user, lang="tr"):
     if not GROQ_API_KEY:
         return {"error": "AI service is not configured (missing GROQ_API_KEY).", "reply": None}
+    
+    # Track if any tool requested navigation
+    pending_action = {"action": None, "url": None}
+    # Track all tool results for fallback logic
+    tool_history = []
 
     if user:
         role = user.role
@@ -552,6 +597,13 @@ def chat(message, history, user, lang="tr"):
                 else:
                     try:
                         result = handler(fargs, ctx)
+                        # If tool returned a navigation action, capture it
+                        if isinstance(result, dict) and result.get("action") == "navigate":
+                            pending_action["action"] = "navigate"
+                            pending_action["url"] = result.get("url")
+                        # Save tool history for fallback logic
+                        if isinstance(result, dict):
+                            tool_history.append({"tool": fname, "args": fargs, "result": result})
                     except Exception as e:
                         logger.exception("Tool %s failed", fname)
                         result = {"error": str(e)}
@@ -576,6 +628,45 @@ def chat(message, history, user, lang="tr"):
             reply = "Sorry, I couldn't generate a response. Please try again." if lang == "en" \
                 else "Üzgünüm, bir cevap oluşturamadım. Lütfen tekrar deneyin."
 
-        return {"reply": reply, "error": None}
+        response = {"reply": reply, "error": None}
+        if pending_action["action"]:
+            response["action"] = pending_action["action"]
+            response["url"] = pending_action["url"]
+        
+        # FALLBACK: If user wanted to book but AI didn't call prepare_booking,
+        # force a redirect based on the most recent hotel found in tool results.
+        if not response.get("action"):
+            BOOK_KEYWORDS = ['book', 'reserve', 'reservation', 'booking',
+                             'rezerve', 'rezervasyon', 'kitla', 'ayirt']
+            msg_lower = (message or "").lower()
+            if any(kw in msg_lower for kw in BOOK_KEYWORDS):
+                # Find most recent hotel business in tool_history
+                forced_id = None
+                forced_name = None
+                for entry in reversed(tool_history):
+                    res = entry.get("result", {})
+                    # search_businesses returns {"businesses": [...]}
+                    businesses = res.get("businesses") if isinstance(res, dict) else None
+                    if businesses:
+                        for biz in businesses:
+                            if isinstance(biz, dict) and biz.get("category") == "hotel":
+                                forced_id = biz.get("id")
+                                forced_name = biz.get("name")
+                                break
+                        if forced_id:
+                            break
+                    # get_business_details returns single business object
+                    if isinstance(res, dict) and res.get("id") and res.get("category") == "hotel":
+                        forced_id = res.get("id")
+                        forced_name = res.get("name")
+                        break
+                
+                if forced_id:
+                    response["action"] = "navigate"
+                    response["url"] = f"#business-detail?id={forced_id}"
+                    response["reply"] = f"Opening the booking page for {forced_name}. Please select a room and confirm your reservation."
+                    logger.info("FORCED REDIRECT: business_id=%s, name=%s", forced_id, forced_name)
+        
+        return response
 
     return {"error": "Too many tool iterations", "reply": None}

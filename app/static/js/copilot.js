@@ -292,6 +292,15 @@
                 showError(errMsg);
             } else {
                 appendMessage('assistant', data.reply);
+                // Handle navigation action from prepare_booking tool
+                if (data.action === 'navigate' && data.url) {
+                    setTimeout(function() {
+                        window.location.hash = data.url;
+                        // Close copilot panel after navigation
+                        const panel = document.getElementById('copilot-panel');
+                        if (panel) panel.classList.remove('open');
+                    }, 1200);
+                }
             }
         } catch (e) {
             hideTyping();
