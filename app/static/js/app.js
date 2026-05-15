@@ -1632,6 +1632,19 @@ window.paintApptAvailCalendar = () => {
     `;
 };
 
+
+// Returns max capacity (guests) for a room type
+function getRoomCapacity(roomType) {
+    const t = (roomType || '').toLowerCase();
+    if (t.includes('family') || t.includes('aile')) return 4;
+    if (t.includes('presidential') || t.includes('baskanl')) return 4;
+    if (t.includes('suite') || t.includes('suit')) return 3;
+    return 2;
+}
+function getExtraGuestFee(roomPrice) {
+    return Math.round((roomPrice || 0) * 0.25);
+}
+
 window._roomBookingData = { roomId: null, price: 0, bookedRanges: [] };
 window._roomModalCtx = { mode: 'create', reservationId: null, onSuccess: null };
 
@@ -1659,7 +1672,7 @@ window.openRoomBookingModal = async (roomId, roomName, roomType, price, ctx = {}
         onSuccess: typeof ctx.onSuccess === 'function' ? ctx.onSuccess : null
     };
 
-    window._roomBookingData = { roomId, price, bookedRanges: [] };
+    window._roomBookingData = { roomId, price, bookedRanges: [], roomType: roomType };
     window._hotelModalCalMonth = { y: new Date().getFullYear(), m: new Date().getMonth() };
 
     const guestsBlock = mode === 'modify' ? '' : `
@@ -1750,6 +1763,17 @@ window.openRoomBookingModal = async (roomId, roomName, roomType, price, ctx = {}
 };
 
 window.calculateRoomPrice = () => {
+    const adultsEl = document.getElementById('modal-adults');
+    const childrenEl = document.getElementById('modal-children');
+    if (adultsEl && !adultsEl.dataset.priceHook) {
+        adultsEl.dataset.priceHook = '1';
+        adultsEl.addEventListener('change', () => window.calculateRoomPrice());
+    }
+    if (childrenEl && !childrenEl.dataset.priceHook) {
+        childrenEl.dataset.priceHook = '1';
+        childrenEl.addEventListener('change', () => window.calculateRoomPrice());
+    }
+
     const checkIn = document.getElementById('modal-check-in')?.value;
     const checkOut = document.getElementById('modal-check-out')?.value;
     const summaryEl = document.getElementById('room-price-summary');
@@ -1769,7 +1793,18 @@ window.calculateRoomPrice = () => {
     }
     
     const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-    const total = nights * (window._roomBookingData.price || 0);
+    const roomPrice = window._roomBookingData.price || 0;
+    const baseTotal = nights * roomPrice;
+
+    const adults = parseInt(document.getElementById('modal-adults')?.value || '2', 10);
+    const children = parseInt(document.getElementById('modal-children')?.value || '0', 10);
+    const totalGuests = adults + children;
+    const roomType = window._roomBookingData.roomType || '';
+    const capacity = (typeof getRoomCapacity === 'function') ? getRoomCapacity(roomType) : 2;
+    const extras = Math.max(0, totalGuests - capacity);
+    const extraFeePerNight = (typeof getExtraGuestFee === 'function') ? getExtraGuestFee(roomPrice) : 0;
+    const extraTotal = extras * extraFeePerNight * nights;
+    const total = baseTotal + extraTotal;
 
     const nEl = document.getElementById('room-nights-count');
     const pEl = document.getElementById('room-total-price');
@@ -1777,6 +1812,25 @@ window.calculateRoomPrice = () => {
     if (nEl) nEl.textContent = nights;
     if (pEl) pEl.textContent = total.toLocaleString('tr-TR') + ' ₺';
     if (rEl) rEl.innerHTML = `${start.toLocaleDateString(numberLocale)}<br>→ ${end.toLocaleDateString(numberLocale)}`;
+
+    let warnEl = document.getElementById('room-capacity-warning');
+    if (!warnEl) {
+        warnEl = document.createElement('p');
+        warnEl.id = 'room-capacity-warning';
+        warnEl.style.cssText = 'font-size: 0.78rem; color: #b45309; background: #fef3c7; padding: 0.6rem 0.9rem; border-radius: 8px; margin-top: -0.5rem; margin-bottom: 1.2rem; line-height: 1.4;';
+        summaryEl.parentNode.insertBefore(warnEl, summaryEl.nextSibling);
+    }
+    if (extras > 0) {
+        const lang = (window.i18n && window.i18n.getCurrentLang()) || 'tr';
+        const msg = (lang === 'en')
+            ? `This room has a capacity of ${capacity}. ${extras} extra guest${extras > 1 ? 's' : ''} adds +${extraFeePerNight.toLocaleString('tr-TR')} TL/night each (total +${extraTotal.toLocaleString('tr-TR')} TL).`
+            : `Bu oda ${capacity} kisilik. ${extras} ek kisi icin her biri +${extraFeePerNight.toLocaleString('tr-TR')} TL/gece (toplam +${extraTotal.toLocaleString('tr-TR')} TL).`;
+        warnEl.textContent = msg;
+        warnEl.style.display = 'block';
+    } else {
+        warnEl.style.display = 'none';
+    }
+
     summaryEl.style.display = 'block';
 };
 

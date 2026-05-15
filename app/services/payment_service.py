@@ -68,6 +68,18 @@ def _stripe_request(endpoint, method="POST", params=None, timeout=30):
         return None, str(e)
 
 
+def _room_capacity(room_type):
+    """Returns max number of guests for a room type. Matches frontend logic."""
+    t = (room_type or '').lower()
+    if 'family' in t or 'aile' in t:
+        return 4
+    if 'presidential' in t or 'baskanl' in t:
+        return 4
+    if 'suite' in t or 'suit' in t:
+        return 3
+    return 2
+
+
 def calculate_amount(reservation):
     from app.models.service import Service
     svc = Service.query.get(reservation.service_id)
@@ -79,7 +91,16 @@ def calculate_amount(reservation):
             nights = (reservation.check_out_date - reservation.check_in_date).days
             if nights < 1:
                 nights = 1
-            return base_price * nights
+            base_total = base_price * nights
+            # Extra-guest fee: 25% of room price per extra guest per night
+            capacity = _room_capacity(getattr(svc, "room_type", ""))
+            guests = (reservation.total_guests
+                      or reservation.adult_count
+                      or 1)
+            extras = max(0, int(guests) - capacity)
+            extra_fee_per_night = round(base_price * 0.25)
+            extra_total = extras * extra_fee_per_night * nights
+            return base_total + extra_total
         return base_price
     return base_price
 
