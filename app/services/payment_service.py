@@ -82,6 +82,9 @@ def _room_capacity(room_type):
 
 def calculate_amount(reservation):
     from app.models.service import Service
+    stored = getattr(reservation, 'total_price', None)
+    if stored is not None and float(stored) > 0:
+        return float(stored)
     svc = Service.query.get(reservation.service_id)
     if not svc or not svc.price:
         return None

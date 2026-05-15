@@ -4,6 +4,7 @@ from app import db
 from app.utils.logging_helper import log_action
 from app.utils.turkey_time import now_tr, today_tr, combine_tr
 from sqlalchemy import and_, or_
+from app.services.payment_service import _room_capacity
 
 class ReservationService:
     @staticmethod
@@ -54,12 +55,22 @@ class ReservationService:
             children = int(guests.get('children', 0))
             total_guests = adults + children
 
+            base_price = float(service.price or 0)
+            nights = (check_out - check_in).days
+            if nights < 1:
+                nights = 1
+            capacity = _room_capacity(getattr(service, 'room_type', ''))
+            extras = max(0, total_guests - capacity)
+            extra_fee_per_night = round(base_price * 0.25)
+            total_price = base_price * nights + extras * extra_fee_per_night * nights
+
             reservation = Reservation(
                 user_id=user_id, service_id=service_id, reservation_type='hotel',
                 check_in_date=check_in, check_out_date=check_out,
                 adult_count=adults, male_count=int(guests.get('male', 0)),
                 female_count=int(guests.get('female', 0)), child_count=children,
-                total_guests=total_guests, note=note, status='pending'
+                total_guests=total_guests, note=note, status='pending',
+                total_price=total_price
             )
         else:
             # --- Appointment Flow ---

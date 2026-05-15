@@ -25,6 +25,7 @@ class Reservation(db.Model):
     payment_status = db.Column(db.String(20), default='unpaid')  # 'unpaid', 'paid', 'failed'
     stripe_session_id = db.Column(db.String(255), nullable=True)
     paid_at = db.Column(db.DateTime, nullable=True)
+    total_price = db.Column(db.Numeric(10, 2), nullable=True)
     user = db.relationship('User', backref='reservations')
     service = db.relationship('Service', backref='reservations')
     slot = db.relationship('TimeSlot', backref='reservations')
@@ -44,6 +45,8 @@ class Reservation(db.Model):
             "adults": self.adult_count,
             "children": self.child_count,
             "total_guests": self.total_guests,
+            "total_price": float(self.total_price) if self.total_price else None,
+            "total_price": float(self.total_price) if self.total_price else None,
             "status": self.status,
             "note": self.note,
             "payment_status": getattr(self, "payment_status", "unpaid"),
