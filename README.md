@@ -1,130 +1,157 @@
-# BETULBOOKING
+# BetulBooking
 
-BETULBOOKING; **otel (konaklama)** ve **randevu (hizmet)** rezervasyonlarını aynı sistemde yöneten hibrit bir platformdur. Frontend vanilla JS, backend Flask + SQLAlchemy.
+> **A multi-vertical online reservation platform with AI assistance**
 
-## Hızlı linkler
+BetulBooking is a hybrid reservation system that supports both **hotel bookings** (date-range based) and **appointment services** (time-slot based) under a single platform. Built as a graduation project at Istanbul Okan University, it integrates a working AI copilot, real Stripe payments, automatic refunds, and a tiered cancellation policy.
 
-- **Seed giriş bilgileri**: `GIRIS_BILGILERI.md`
-- **Testler**: `tests/` (pytest)
+![Stack](https://img.shields.io/badge/backend-Flask%203.0-blue) ![Stack](https://img.shields.io/badge/db-PostgreSQL%2015-blue) ![Stack](https://img.shields.io/badge/ai-Llama%203.3%2070B-orange) ![Stack](https://img.shields.io/badge/payment-Stripe-purple) ![Container](https://img.shields.io/badge/container-Docker-blue)
 
-## Özellikler (özet)
+---
 
-- **Müşteri**
-  - İşletme/hizmet keşfi
-  - Otel için **giriş/çıkış tarih aralığı** ile rezervasyon
-  - Randevu için **gün + saat slotu** ile rezervasyon
-  - Rezervasyon iptal/değiştirme (kurallara bağlı)
+## ✨ Features
 
-- **Business Owner / Staff**
-  - Hizmet/oda ve slot yönetimi
-  - Rezervasyonları **onayla/reddet**
-  - Müsaitlik oluşturma: hem otel hem randevu için **takvimden aralık seçerek** “aralığı aç”
-  - **Rezerve edilmiş tarih/slot kapatılamaz** (iptal etmeden)
+### 🤖 AI Copilot
+- Powered by **Groq Llama 3.3 70B** with native tool calling
+- 8 distinct tools: business search, availability check, my reservations, business reviews, statistics, and more
+- Bilingual conversation (Turkish & English)
+- Retry mechanism for tool-call edge cases
 
-- **Superadmin**
-  - İşletmeler / kullanıcılar / loglar
-  - Pagination + arama
+### 💳 Payments & Refunds
+- Real **Stripe Checkout** integration (test mode, Turkish Lira)
+- Automatic **partial/full refunds** when reservations are cancelled
+- Payment status tracking on each reservation
 
-## Kurulum ve çalıştırma
+### 📅 Reservations
+- **Hotel bookings**: date-range with overlap prevention
+- **Appointment bookings**: time-slot based
+- **Tiered cancellation policy**: 3+ days free / 1-2 days 20% fee / same-day 50% fee
+- **Room capacity & extra-guest fees** (Standard 2, Suite 3, Family/Presidential 4)
+- **Optional breakfast** (+15%) — Booking.com-style add-on
+- **Price locking**: total computed at booking, persisted on the row
 
-### Docker
+### 🌐 User Experience
+- Full **Turkish/English internationalization** (600+ translation keys)
+- **Dark mode** with system-preference detection
+- **Bilingual HTML email notifications** when reservations change status
+- Tier-based **room amenities** display (Standard 5 → Presidential 17 items)
+- Mobile-responsive booking modals
 
-Projede `docker-compose.yml` varsa:
+### 🛡️ User Roles
+- **Customer**: browse, reserve, pay, cancel, review
+- **Business Owner**: manage services, approve/reject reservations, view stats
+- **Staff**: assist business owners with day-to-day operations
+- **Super Admin**: system-wide oversight, activity logs
 
-```bash
-docker-compose up --build
-```
+---
 
-Uygulama: `http://localhost:5000`
+## 🛠️ Tech Stack
 
-## Testler
+| Layer | Technology |
+|-------|-----------|
+| Backend | Python 3.11, Flask 3.0.3, SQLAlchemy, Flask-JWT-Extended |
+| Database | PostgreSQL 15 |
+| Frontend | Vanilla JavaScript, plain CSS with custom properties |
+| AI | Groq Cloud API + Llama 3.3 70B Versatile |
+| Payments | Stripe (Checkout Sessions, Refunds API) |
+| Email | Gmail SMTP with bilingual HTML templates |
+| Container | Docker + Docker Compose |
 
-Testleri Docker içinden çalıştırın:
+---
 
-```bash
-docker-compose exec web pytest -q
-```
+## 🚀 Quick Start
 
-Coverage (opsiyonel):
+### Prerequisites
+- Docker Desktop
+- A copy of `.env` (see `.env.example` for keys)
 
-```bash
-docker-compose exec web pytest --cov=app --cov-report=term-missing
-```
-
-## Seed / Demo veri
-
-`seed.py` örnek işletme/hizmet/kullanıcılar üretir. Girişler için:
-
-- `GIRIS_BILGILERI.md`
-
-## Güvenlik
-
-BetulBooking, SRS §8 Security gereksinimleri uyarınca aşağıdaki önlemleri uygular:
-
-### Kimlik doğrulama ve şifreleme
-- **Parola hashleme:** Tüm parolalar `Flask-Bcrypt` ile hashlenerek saklanır. Düz metin parola veritabanında tutulmaz.
-- **JWT (JSON Web Token):** Giriş sonrası kullanıcıya kısa ömürlü JWT verilir; her API isteği `Authorization: Bearer <token>` başlığıyla doğrulanır. Token, kullanıcının `role` claim'ini taşır.
-- **Rol tabanlı erişim (RBAC):** Her korumalı endpoint `@jwt_required()` ile kimlik ister; ayrıca yardımcı fonksiyonlar (`_require_superadmin`, `_require_business_owner`, `_require_staff`) rol yetkisini zorlar.
-
-### Girdi doğrulama ve SQL güvenliği
-- Tüm kullanıcı girdileri backend'de doğrulanır (tip, uzunluk, zorunluluk).
-- ORM (SQLAlchemy) kullanıldığı için SQL enjeksiyonuna karşı tüm sorgular parametrik çalışır.
-
-### CSRF Koruması
-- API stateless JWT ile çalıştığı için klasik cookie tabanlı CSRF saldırı yüzeyi bulunmaz. Token `localStorage`'da saklanır, her istekte Authorization başlığı olarak manuel gönderilir — otomatik cookie iletimi yoktur.
-- Üçüncü taraf bir sitenin JWT token'ını çalıp kullanabilmesi için aynı origin'de XSS gerekir; uygulama, render sırasında tüm kullanıcı içeriklerini HTML-escape eder.
-
-### HTTPS / SSL (Üretim Ortamı)
-Bu repo yerel geliştirme ve Docker testi için yapılandırılmıştır ve `HTTP` ile `localhost:5000` üzerinden çalışır. **Üretim dağıtımında mutlaka HTTPS kullanılmalıdır.** Önerilen yöntemler:
-
-- **Opsiyon A — Nginx reverse proxy + Let's Encrypt (ücretsiz SSL):**
-  ```
-  Client ──HTTPS──▶ Nginx (443) ──HTTP──▶ Flask (5000)
-  ```
-  Sertifika otomatik yenileme için `certbot --nginx` kullanılabilir.
-
-- **Opsiyon B — Cloudflare / AWS CloudFront gibi bir CDN önüne almak:**
-  SSL terminasyonu CDN üzerinde yapılır, origin sunucuya HTTP geçer.
-
-- **Opsiyon C — Gunicorn + SSL sertifikası:**
-  ```bash
-  gunicorn --certfile=cert.pem --keyfile=key.pem -b 0.0.0.0:443 run:app
-  ```
-
-Üretim dağıtımında ayrıca `SECRET_KEY` ve `JWT_SECRET_KEY` ortam değişkenleri güçlü, rastgele üretilmiş değerlerle değiştirilmelidir.
-
-### Log kayıtları
-Tüm CRUD işlemleri `Log` tablosuna kaydedilir: kullanıcı ID, işlem tipi, etkilenen kayıt, zaman damgası. Superadmin panelinden `AND`/`OR`/`NOT` operatörleriyle aranabilir (SRS §5.2.b uyumlu).
-
-## Arama (SRS §5.2 uyumlu)
-
-- **Case-insensitive:** PostgreSQL `ILIKE` ile tüm aramalar büyük/küçük harf duyarsızdır.
-- **Mantıksal operatörler:** Süperadmin log arama ekranında `AND`, `OR`, `NOT` desteklenir:
-  - `CREATE AND reservation` → her ikisini de içerir
-  - `UPDATE OR DELETE` → birini içerir
-  - `CREATE NOT service` → CREATE var ama service yok
-  - İmplicit AND: `CREATE reservation` = `CREATE AND reservation`
-- **Pagination:** Tüm listeleme endpoint'lerinde sayfa başına 20 kayıt (SRS §5.2.d uyumlu).
-
-## Performans
-
-SRS §9.4'e göre 4000 kayıt içerisinden 20 sonuç ≤ 3 saniye içinde dönmelidir. Projede:
-- Arama alanları üzerinde PostgreSQL indeks (`name`, `email`, `action`, `timestamp`).
-- Paginasyon ile sadece 20 kayıt işlenir.
-- Performans doğrulama betiği: `scripts/performance_test.py` (aşağıya bkz.).
+### Run
 
 ```bash
-docker-compose exec web python scripts/performance_test.py
+git clone https://github.com/fbetul13/proje-okul.git
+cd proje-okul
+docker-compose up
 ```
 
-## Üretim dağıtımı kontrol listesi
+Visit **http://localhost:15000** in your browser.
 
-- [ ] `.env` dosyasındaki `SECRET_KEY` ve `JWT_SECRET_KEY` güçlü değerlerle değiştirildi
-- [ ] `DATABASE_URL` üretim PostgreSQL veritabanına işaret ediyor
-- [ ] HTTPS aktif (Nginx + Let's Encrypt veya CDN)
-- [ ] `debug=False` (Flask prod modda)
-- [ ] Gunicorn veya uwsgi ile WSGI sunucusu kuruldu
-- [ ] Mail servisi için SMTP bilgileri `.env`'e eklendi
-- [ ] Log rotation yapılandırıldı
-- [ ] DB yedeklemesi kuruldu
+The first startup runs seed data, so a demo dataset (businesses, users, services) is automatically created. Default credentials are in `GIRIS_BILGILERI.md`.
 
+---
+
+## 🔑 Demo Credentials
+
+See `GIRIS_BILGILERI.md` for the full list. Quick test:
+
+- **Customer**: `[username from seed]` 
+- **Business Owner**: `[username from seed]`
+- **Super Admin**: `[username from seed]`
+
+For Stripe payment testing, use card `4242 4242 4242 4242` with any future expiry and any CVC.
+
+---
+
+## 📁 Project Structure
+
+```
+okulproje/
+├── app/
+│   ├── models/              # SQLAlchemy models (User, Business, Service, Reservation)
+│   ├── routes/              # Flask blueprints (customer, business, admin, auth)
+│   ├── services/            # Business logic (reservation, payment, copilot, email)
+│   ├── static/
+│   │   ├── js/              # Vanilla JS: app.js, copilot.js, i18n.js, dark-mode.js
+│   │   └── css/             # Styles + dark mode
+│   └── templates/           # Email templates
+├── tests/                   # pytest test suite
+├── docker-compose.yml
+├── Dockerfile
+├── seed.py                  # Demo data
+└── requirements.txt
+```
+
+---
+
+## 🎯 Architectural Highlights
+
+### Price Locking
+When a reservation is created, the total price is computed (base × nights + extra-guest fee + breakfast multiplier) and stored on the row. The Stripe Checkout session reads this stored value rather than recomputing live, so a customer who booked at 1000 TL/night always pays 1000 TL/night even if the room rate later changes.
+
+### Tiered Cancellation
+Cancellation penalty is determined by how many days remain until check-in:
+- **3+ days before** → free cancellation, 100% refund
+- **1-2 days** → 20% penalty, 80% refund
+- **Same day** → 50% penalty, 50% refund
+
+When a paid reservation is cancelled, the system automatically issues a Stripe refund for the appropriate partial amount.
+
+### AI Copilot Tool Calling
+The copilot is implemented as a thin layer over `groq` SDK with structured tool definitions. Eight tools route into the same service-layer functions used by the rest of the application, so AI-driven actions and human-driven actions stay consistent. A retry mechanism handles cases where Llama occasionally emits a function call as text instead of using the structured format.
+
+### Bilingual Email
+When a reservation status changes (approved/rejected/etc.), the email service renders a gold-themed HTML email in the customer's preferred language (TR or EN), stored as a tag in the reservation note.
+
+---
+
+## 🧪 Testing
+
+```bash
+docker exec okulproje-web-1 pytest tests/ -v
+```
+
+Tests cover reservation creation, capacity logic, cancellation penalties, and payment amount calculation.
+
+---
+
+## 🎓 Academic Context
+
+This project was developed as the graduation project for the Department of Software Engineering at İstanbul Okan University, under the supervision of **Asst. Prof. Dr. Emel Koç**.
+
+- **Student**: Fatıma Betül Eroğlu (220218318)
+- **Department**: Software Engineering
+- **Year**: 2026
+
+---
+
+## 📜 License
+
+This project is licensed for academic purposes. For other use cases please contact the author.
