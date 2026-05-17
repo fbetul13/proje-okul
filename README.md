@@ -62,7 +62,7 @@ BetulBooking is a hybrid reservation system that supports both **hotel bookings*
 
 ### Prerequisites
 - Docker Desktop
-- A copy of `.env` (see `.env.example` for keys)
+- A copy of `.env` file at the project root with the required keys
 
 ### Run
 
