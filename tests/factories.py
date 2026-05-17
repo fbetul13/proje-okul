@@ -47,8 +47,15 @@ def create_service(
     business_id: int,
     name: str = "Test Service",
     category: str = "appointment",
+    room_type: Optional[str] = None,
+    price: Optional[float] = None,
 ) -> Service:
-    s = Service(business_id=business_id, name=name, category=category)
+    kwargs = {"business_id": business_id, "name": name, "category": category}
+    if room_type is not None:
+        kwargs["room_type"] = room_type
+    if price is not None:
+        kwargs["price"] = price
+    s = Service(**kwargs)
     db.session.add(s)
     db.session.commit()
     return s
