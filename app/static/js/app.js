@@ -1698,6 +1698,13 @@ window.openRoomBookingModal = async (roomId, roomName, roomType, price, ctx = {}
                     </select>
                 </div>
             </div>
+            <label style="display: flex; align-items: center; gap: 0.6rem; margin-top: 1rem; padding: 0.8rem; background: white; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer;">
+                <input type="checkbox" id="modal-breakfast" style="width: 1.1rem; height: 1.1rem; cursor: pointer;">
+                <span style="font-size: 0.9rem; color: #333;">
+                    <strong>${t('modal.breakfast_included')}</strong>
+                    <span style="color: #888; font-size: 0.82rem;"> ${t('modal.breakfast_extra')}</span>
+                </span>
+            </label>
         </div>
     `;
 
@@ -1773,6 +1780,11 @@ window.calculateRoomPrice = () => {
         childrenEl.dataset.priceHook = '1';
         childrenEl.addEventListener('change', () => window.calculateRoomPrice());
     }
+    const breakfastHookEl = document.getElementById('modal-breakfast');
+    if (breakfastHookEl && !breakfastHookEl.dataset.priceHook) {
+        breakfastHookEl.dataset.priceHook = '1';
+        breakfastHookEl.addEventListener('change', () => window.calculateRoomPrice());
+    }
 
     const checkIn = document.getElementById('modal-check-in')?.value;
     const checkOut = document.getElementById('modal-check-out')?.value;
@@ -1794,7 +1806,9 @@ window.calculateRoomPrice = () => {
     
     const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     const roomPrice = window._roomBookingData.price || 0;
-    const baseTotal = nights * roomPrice;
+    const breakfastEl = document.getElementById('modal-breakfast');
+    const breakfastMultiplier = (breakfastEl && breakfastEl.checked) ? 1.15 : 1.0;
+    const baseTotal = nights * roomPrice * breakfastMultiplier;
 
     const adults = parseInt(document.getElementById('modal-adults')?.value || '2', 10);
     const children = parseInt(document.getElementById('modal-children')?.value || '0', 10);
@@ -1996,6 +2010,7 @@ window.confirmRoomBooking = async () => {
             const childrenEl = document.getElementById('modal-children');
             await API.customer.createReservation({
                 service_id: window._roomBookingData.roomId,
+                breakfast_included: !!(document.getElementById('modal-breakfast')?.checked),
                 check_in: checkIn,
                 check_out: checkOut,
                 note: document.getElementById('modal-note').value,

@@ -62,7 +62,10 @@ class ReservationService:
             capacity = _room_capacity(getattr(service, 'room_type', ''))
             extras = max(0, total_guests - capacity)
             extra_fee_per_night = round(base_price * 0.25)
-            total_price = base_price * nights + extras * extra_fee_per_night * nights
+            breakfast = bool(data.get('breakfast_included', False))
+            breakfast_multiplier = 1.15 if breakfast else 1.0
+            total_price = (base_price * nights * breakfast_multiplier
+                           + extras * extra_fee_per_night * nights)
 
             reservation = Reservation(
                 user_id=user_id, service_id=service_id, reservation_type='hotel',
@@ -70,7 +73,8 @@ class ReservationService:
                 adult_count=adults, male_count=int(guests.get('male', 0)),
                 female_count=int(guests.get('female', 0)), child_count=children,
                 total_guests=total_guests, note=note, status='pending',
-                total_price=total_price
+                total_price=total_price,
+                breakfast_included=breakfast
             )
         else:
             # --- Appointment Flow ---

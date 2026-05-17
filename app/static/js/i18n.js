@@ -710,6 +710,10 @@
             'res.cancel_fee_20': 'İptal ücreti: %20 kesinti.',
             'res.cancel_fee_50': 'Bugün iptal: %50 kesinti uygulanır.',
             'res.cancel_too_late': 'Bu rezervasyon iptal edilemez (geçmiş tarih).',
+
+            // -- breakfast --
+            'modal.breakfast_included': 'Kahvaltı Dahil',
+            'modal.breakfast_extra': '(+%15 ek ücret)',
         },
         en: {
             // Language
@@ -1403,6 +1407,10 @@
             'res.cancel_fee_20': 'Cancellation fee: 20% deduction.',
             'res.cancel_fee_50': 'Same-day cancellation: 50% fee applies.',
             'res.cancel_too_late': 'This reservation cannot be cancelled (past date).',
+
+            // -- breakfast --
+            'modal.breakfast_included': 'Breakfast Included',
+            'modal.breakfast_extra': '(+15% extra)',
         },
     };
 

@@ -26,6 +26,7 @@ class Reservation(db.Model):
     stripe_session_id = db.Column(db.String(255), nullable=True)
     paid_at = db.Column(db.DateTime, nullable=True)
     total_price = db.Column(db.Numeric(10, 2), nullable=True)
+    breakfast_included = db.Column(db.Boolean, default=False, nullable=True)
     user = db.relationship('User', backref='reservations')
     service = db.relationship('Service', backref='reservations')
     slot = db.relationship('TimeSlot', backref='reservations')

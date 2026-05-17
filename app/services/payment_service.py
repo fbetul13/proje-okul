@@ -94,7 +94,9 @@ def calculate_amount(reservation):
             nights = (reservation.check_out_date - reservation.check_in_date).days
             if nights < 1:
                 nights = 1
-            base_total = base_price * nights
+            breakfast = bool(getattr(reservation, 'breakfast_included', False))
+            breakfast_multiplier = 1.15 if breakfast else 1.0
+            base_total = base_price * nights * breakfast_multiplier
             # Extra-guest fee: 25% of room price per extra guest per night
             capacity = _room_capacity(getattr(svc, "room_type", ""))
             guests = (reservation.total_guests
