@@ -132,6 +132,10 @@ class ReservationService:
             if slot:
                 slot.is_available = True
 
+        # If a paid reservation is rejected, mark payment as refunded
+        if status == 'rejected' and getattr(reservation, 'payment_status', None) == 'paid':
+            reservation.payment_status = 'refunded'
+
         db.session.commit()
 
         # Send email notification asynchronously

@@ -308,18 +308,23 @@ def cancel_reservation(res_id):
     # Stripe refund if paid
     refund_amount = None
     refund_status = "N/A"
-    if getattr(reservation, 'payment_status', None) == 'paid' and reservation.stripe_session_id:
+    if getattr(reservation, 'payment_status', None) == 'paid':
         try:
-            from app.services.payment_service import calculate_amount, refund_payment
+            from app.services.payment_service import calculate_amount, refund_payment, is_dummy_mode
             paid_amount = calculate_amount(reservation) or 0
             refund_amount = paid_amount * (100 - penalty_percent) / 100.0
-            if refund_amount > 0:
+            if is_dummy_mode():
+                # Dummy mode: no real money, just mark as refunded
+                reservation.payment_status = 'refunded'
+                refund_status = f"REFUNDED: {refund_amount:.2f} TRY"
+            elif reservation.stripe_session_id and refund_amount > 0:
                 refund_data, refund_err = refund_payment(reservation, refund_amount)
                 if refund_err:
                     refund_status = f"FAILED: {refund_err}"
                     import logging
                     logging.error("Stripe refund failed for reservation %s: %s", res_id, refund_err)
                 else:
+                    reservation.payment_status = 'refunded'
                     refund_status = f"REFUNDED: {refund_amount:.2f} TRY"
         except Exception as e:
             import logging

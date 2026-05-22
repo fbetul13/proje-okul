@@ -1653,9 +1653,9 @@ window._roomModalCtx = { mode: 'create', reservationId: null, onSuccess: null };
 function getRoomAmenities(roomType) {
     const t = (roomType || '').toLowerCase();
     const standard = ['amenities.wifi', 'amenities.ac', 'amenities.tv', 'amenities.bathroom', 'amenities.daily_cleaning'];
-    const deluxeExtras = ['amenities.breakfast', 'amenities.minibar', 'amenities.parking', 'amenities.city_view'];
+    const deluxeExtras = ['amenities.minibar', 'amenities.parking', 'amenities.city_view'];
     const suiteExtras = ['amenities.living_room', 'amenities.premium_bedding', 'amenities.bathrobe', 'amenities.welcome_drink'];
-    const familyExtras = ['amenities.crib', 'amenities.family_breakfast', 'amenities.kids_area'];
+    const familyExtras = ['amenities.crib', 'amenities.kids_area'];
     const presidentialExtras = ['amenities.butler', 'amenities.private_pool', 'amenities.spa_voucher', 'amenities.airport_transfer'];
     if (t.includes('presidential') || t.includes('baskanl')) return [...standard, ...deluxeExtras, ...suiteExtras, ...presidentialExtras];
     if (t.includes('suite') || t.includes('suit')) return [...standard, ...deluxeExtras, ...suiteExtras];
@@ -4256,7 +4256,7 @@ async function viewBusinessReservations(container) {
         const data = await API.business.getReservations();
         document.getElementById('biz-res-list').innerHTML = `
             <table class="admin-table">
-                <thead><tr><th>${t('bo.col.customer')}</th><th>${t('bo.col.contact')}</th><th>${t('bo.col.service')}</th><th>${t('bo.col.date')}</th><th>${t('bo.col.status')}</th><th>${t('sa.col.actions')}</th></tr></thead>
+                <thead><tr><th>${t('bo.col.customer')}</th><th>${t('bo.col.contact')}</th><th>${t('bo.col.service')}</th><th>${t('bo.col.date')}</th><th>${t('bo.col.status')}</th><th>Odeme</th><th>${t('sa.col.actions')}</th></tr></thead>
                 <tbody>
                     ${data.reservations.map(r => `
                         <tr>
@@ -4270,6 +4270,18 @@ async function viewBusinessReservations(container) {
                             <td>${r.service_name}</td>
                             <td style="font-size:0.85rem;">${r.slot_date ? `${r.slot_date} ${r.slot_time || ''}` : (r.check_in ? `${r.check_in} → ${r.check_out}` : '—')}</td>
                             <td><span class="badge badge-${r.status}">${LOCALE.STATUS[r.status]}</span></td>
+                            <td>
+                                ${r.payment_status === 'refunded'
+                                    ? `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:6px;background:#fef3c7;color:#b45309;font-size:0.8rem;font-weight:600;">Iade Edildi</span>`
+                                    : r.status === 'rejected'
+                                    ? `<span style="color:#999;font-size:0.8rem;">—</span>`
+                                    : r.payment_status === 'paid'
+                                    ? `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:6px;background:#dcfce7;color:#16a34a;font-size:0.8rem;font-weight:600;">Odendi${r.total_price ? ' - ' + Number(r.total_price).toLocaleString('tr-TR') + ' TL' : ''}</span>`
+                                    : r.status === 'pending'
+                                    ? `<span style="color:#999;font-size:0.8rem;">—</span>`
+                                    : `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:6px;background:#fee2e2;color:#dc2626;font-size:0.8rem;font-weight:600;">Odeme Bekleniyor</span>`
+                                }
+                            </td>
                             <td>
                                 <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                                 ${r.status === 'pending' ? `
@@ -4844,7 +4856,7 @@ async function viewStaffReservations(container) {
                 return;
             }
             el.innerHTML = `<table class="admin-table">
-                <thead><tr><th>${t('bo.col.customer')}</th><th>${t('bo.col.contact')}</th><th>${t('bo.col.service')}</th><th>${t('bo.col.datetime')}</th><th>${t('bo.col.status')}</th><th>${t('sa.col.actions')}</th><th>${t('res.review')}</th></tr></thead>
+                <thead><tr><th>${t('bo.col.customer')}</th><th>${t('bo.col.contact')}</th><th>${t('bo.col.service')}</th><th>${t('bo.col.datetime')}</th><th>${t('bo.col.status')}</th><th>Odeme</th><th>${t('sa.col.actions')}</th><th>${t('res.review')}</th></tr></thead>
                 <tbody>${data.reservations.map(r => `
                     <tr>
                         <td>${r.user_name || '—'}</td>
@@ -4857,6 +4869,14 @@ async function viewStaffReservations(container) {
                         <td>${r.service_name}</td>
                         <td style="font-size:0.85rem;">${r.slot_date ? `${r.slot_date} ${r.slot_time}` : (r.check_in ? `${r.check_in} → ${r.check_out}` : '—')}</td>
                         <td><span class="badge badge-${r.status}">${LOCALE.STATUS[r.status]}</span></td>
+                        <td>
+                            ${r.payment_status === 'paid'
+                                ? `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:6px;background:#dcfce7;color:#16a34a;font-size:0.8rem;font-weight:600;">Odendi${r.total_price ? ' - ' + Number(r.total_price).toLocaleString('tr-TR') + ' TL' : ''}</span>`
+                                : r.payment_status === 'refunded'
+                                ? `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:6px;background:#fef3c7;color:#b45309;font-size:0.8rem;font-weight:600;">Iade Edildi</span>`
+                                : `<span style="display:inline-block;padding:0.25rem 0.6rem;border-radius:6px;background:#fee2e2;color:#dc2626;font-size:0.8rem;font-weight:600;">Odeme Bekleniyor</span>`
+                            }
+                        </td>
                         <td>
                             <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                             ${r.status === 'pending' ? `
@@ -5271,3 +5291,153 @@ function initLangSwitcher() {
 // Sayfa ilk yüklendiğinde ve her route değişiminde çalıştır
 document.addEventListener('DOMContentLoaded', initLangSwitcher);
 initLangSwitcher(); // Güvenlik için hemen de çağır (DOMContentLoaded geç gelebilir)
+
+// ── Dummy Payment Page ──────────────────────────────────────────
+window.renderDummyPaymentPage = function(reservationId, amount) {
+    const lang = (window.i18n && window.i18n.getCurrentLang && window.i18n.getCurrentLang()) || 'tr';
+    const isTR = lang === 'tr';
+    const L = isTR ? {
+        secure: 'Güvenli Ödeme', amount: 'Ödeme Tutarı',
+        cardholder: 'KART SAHİBİ', cardname: 'BetulBooking Misafiri',
+        cardnum: 'Kart Numarası', expiry: 'Son Kullanma', cvv: 'CVV',
+        hint: 'Test kartları', s1: 'Başarılı', s2: 'Reddedildi', s3: 'Limit yetersiz', s4: 'Geçersiz',
+        pay: 'Öde', back: 'Geri Dön'
+    } : {
+        secure: 'Secure Payment', amount: 'Payment Amount',
+        cardholder: 'CARDHOLDER', cardname: 'BetulBooking Guest',
+        cardnum: 'Card Number', expiry: 'Expiry', cvv: 'CVV',
+        hint: 'Test cards', s1: 'Success', s2: 'Declined', s3: 'Insufficient', s4: 'Invalid',
+        pay: 'Pay', back: 'Go Back'
+    };
+    const amt = parseFloat(amount).toLocaleString(isTR ? 'tr-TR' : 'en-US');
+    document.getElementById('app-root').innerHTML = `
+        <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; background:var(--bg-light);">
+            <div style="background:#fff; border-radius:18px; padding:2.5rem; width:100%; max-width:440px; box-shadow:0 24px 60px rgba(26,26,26,0.18); border:1px solid #eee;">
+                <div style="text-align:center; margin-bottom:1.8rem;">
+                    <div style="font-size:0.78rem; letter-spacing:2px; color:var(--accent); font-weight:700;">BETULBOOKING</div>
+                    <h2 style="font-size:1.45rem; font-weight:700; color:var(--primary); margin:0.4rem 0 0;">${L.secure}</h2>
+                </div>
+                <div style="position:relative; height:200px; border-radius:16px; padding:1.5rem; margin-bottom:1.8rem; background:linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 55%, #1a1a1a 100%); box-shadow:0 12px 28px rgba(0,0,0,0.35); overflow:hidden;">
+                    <div style="position:absolute; top:-40px; right:-30px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(197,160,89,0.35), transparent 70%);"></div>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div style="width:46px; height:34px; border-radius:6px; background:linear-gradient(135deg, #c5a059, #e8cf9a);"></div>
+                        <div style="color:var(--accent); font-weight:700; font-size:0.85rem; letter-spacing:1px;">BETULBOOKING</div>
+                    </div>
+                    <div id="dummy-card-display" style="margin-top:1.6rem; color:#fff; font-size:1.35rem; letter-spacing:3px; font-family:monospace;">•••• •••• •••• ••••</div>
+                    <div style="display:flex; justify-content:space-between; margin-top:1.4rem;">
+                        <div>
+                            <div style="color:#888; font-size:0.6rem; letter-spacing:1px;">${L.cardholder}</div>
+                            <div style="color:#eee; font-size:0.82rem; margin-top:2px;">${L.cardname}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:#888; font-size:0.6rem; letter-spacing:1px;">${L.amount.toUpperCase()}</div>
+                            <div style="color:var(--accent); font-size:0.95rem; font-weight:700; margin-top:2px;">${amt} ₺</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="dummy-payment-error" style="display:none; background:#fdecea; color:#c0392b; padding:0.8rem 1rem; border-radius:9px; margin-bottom:1rem; font-size:0.88rem;"></div>
+                <div id="dummy-payment-success" style="display:none; background:#eaf7ee; color:#1e8449; padding:0.8rem 1rem; border-radius:9px; margin-bottom:1rem; font-size:0.88rem;"></div>
+                <div style="margin-bottom:1rem;">
+                    <label style="font-size:0.8rem; color:var(--primary); font-weight:600; display:block; margin-bottom:0.4rem;">${L.cardnum}</label>
+                    <input id="dummy-card-number" type="text" inputmode="numeric" maxlength="16" placeholder="0000 0000 0000 0001"
+                        style="width:100%; padding:0.9rem 1rem; border:1.5px solid #ddd; border-radius:10px; font-size:1rem; box-sizing:border-box; letter-spacing:2px; font-family:monospace;"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,''); var d=document.getElementById('dummy-card-display'); var v=this.value.padEnd(16,'•'); d.textContent=(v.match(/.{1,4}/g)||[]).join(' ');">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.4rem;">
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--primary); font-weight:600; display:block; margin-bottom:0.4rem;">${L.expiry}</label>
+                        <input id="dummy-expiry" type="text" inputmode="numeric" maxlength="5" placeholder="MM/YY"
+                            style="width:100%; padding:0.9rem 1rem; border:1.5px solid #ddd; border-radius:10px; font-size:1rem; box-sizing:border-box;"
+                            oninput="var x=this.value.replace(/[^0-9]/g,''); if(x.length>=2){var mm=parseInt(x.substring(0,2),10); if(mm>12){x='12'+x.substring(2);} if(mm===0){x='01'+x.substring(2);}} if(x.length>2){x=x.substring(0,2)+'/'+x.substring(2,4);} this.value=x;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; color:var(--primary); font-weight:600; display:block; margin-bottom:0.4rem;">${L.cvv}</label>
+                        <input id="dummy-cvv" type="text" inputmode="numeric" maxlength="3" placeholder="123"
+                            style="width:100%; padding:0.9rem 1rem; border:1.5px solid #ddd; border-radius:10px; font-size:1rem; box-sizing:border-box;"
+                            oninput="this.value=this.value.replace(/[^0-9]/g,'');">
+                    </div>
+                </div>
+                <button id="dummy-pay-btn" onclick="window.submitDummyPayment(${reservationId})"
+                    style="width:100%; padding:1rem; background:linear-gradient(145deg, var(--accent) 0%, #a68442 100%); color:#fff; border:none; border-radius:10px; font-size:1.02rem; font-weight:700; cursor:pointer; letter-spacing:0.3px;">
+                    ${L.pay} ${amt} ₺
+                </button>
+                <button onclick="window.location.hash='#my-reservations'"
+                    style="width:100%; padding:0.7rem; margin-top:0.7rem; background:none; border:none; color:#999; font-size:0.85rem; cursor:pointer;">
+                    ← ${L.back}
+                </button>
+            </div>
+        </div>
+    `;
+};
+
+window.submitDummyPayment = async function(reservationId) {
+    const btn = document.getElementById('dummy-pay-btn');
+    const errEl = document.getElementById('dummy-payment-error');
+    const succEl = document.getElementById('dummy-payment-success');
+    const cardInput = document.getElementById('dummy-card-number');
+    
+    errEl.style.display = 'none';
+    succEl.style.display = 'none';
+    
+    const cardNumber = (cardInput.value || '').replace(/\D/g, '');
+    if (cardNumber.length < 4) {
+        errEl.textContent = (window.i18n && window.i18n.getCurrentLang()) === 'en' 
+            ? 'Please enter at least 4 digits.' 
+            : 'Lütfen en az 4 hane girin.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const _payEn = (window.i18n && window.i18n.getCurrentLang && window.i18n.getCurrentLang()) === 'en';
+    const _expInput = document.getElementById('dummy-expiry');
+    const _expValue = (_expInput && _expInput.value) || '';
+    if (!/^[0-9]{2}\/[0-9]{2}$/.test(_expValue)) {
+        errEl.textContent = _payEn
+            ? 'Please enter a valid expiry date (MM/YY).'
+            : 'Lütfen geçerli bir son kullanma tarihi girin (AA/YY).';
+        errEl.style.display = 'block';
+        return;
+    }
+    const _cvvInput = document.getElementById('dummy-cvv');
+    const _cvvValue = (_cvvInput && _cvvInput.value) || '';
+    if (_cvvValue.length !== 3) {
+        errEl.textContent = _payEn
+            ? 'Please enter a valid 3-digit CVV.'
+            : 'Lütfen geçerli bir 3 haneli CVV girin.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ İşleniyor...';
+    
+    try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/payment/dummy-pay/${reservationId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ card_number: cardNumber })
+        });
+        const data = await res.json();
+        
+        if (res.ok && data.status === 'paid') {
+            succEl.textContent = '✅ ' + data.message;
+            succEl.style.display = 'block';
+            btn.textContent = '✅ Ödeme Başarılı!';
+            btn.style.background = '#16a34a';
+            setTimeout(() => { window.location.hash = '#my-reservations'; }, 2000);
+        } else {
+            errEl.textContent = '❌ ' + (data.message || data.error || 'Ödeme başarısız.');
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '💳 Tekrar Dene';
+        }
+    } catch(e) {
+        errEl.textContent = 'Bağlantı hatası. Lütfen tekrar deneyin.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '💳 Tekrar Dene';
+    }
+};
+// ── End Dummy Payment Page ──────────────────────────────────────
+

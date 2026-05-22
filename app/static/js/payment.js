@@ -41,7 +41,12 @@
                 return;
             }
 
-            window.location.href = data.checkout_url;
+            if (data.checkout_url && data.checkout_url.indexOf('/dummy-payment') !== -1) {
+                const p = new URLSearchParams(data.checkout_url.split('?')[1]);
+                window.renderDummyPaymentPage(p.get('reservation_id'), p.get('amount'));
+            } else {
+                window.location.href = data.checkout_url;
+            }
         } catch (e) {
             console.error('Payment error:', e);
             alert(t('Bağlantı hatası. Lütfen tekrar deneyin.', 'Connection error. Please try again.'));

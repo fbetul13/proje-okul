@@ -2,6 +2,7 @@
 Payment Service — Stripe Checkout integration for BetulBooking
 """
 import os
+import re
 import json
 import logging
 from datetime import datetime
@@ -12,6 +13,38 @@ logger = logging.getLogger(__name__)
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 STRIPE_API_BASE = "https://api.stripe.com/v1"
+PAYMENT_MODE = os.getenv("PAYMENT_MODE", "stripe")  # "stripe" or "dummy"
+
+
+# ── Dummy payment helpers ────────────────────────────────────────
+
+def is_dummy_mode():
+    return PAYMENT_MODE == "dummy"
+
+
+def dummy_card_result(card_number: str):
+    """Return (success, error_code, message) based on last digit of card number."""
+    digits = re.sub(r'\D', '', card_number or '')
+    last = digits[-1] if digits else '0'
+    if last == '2':
+        return False, 'card_declined', 'Kartınız reddedildi. Lütfen bankanızla iletişime geçin.'
+    if last == '3':
+        return False, 'insufficient_funds', 'Kartınızda yeterli limit bulunmamaktadır.'
+    if last == '4':
+        return False, 'invalid_number', 'Geçersiz kart numarası. Lütfen kontrol ediniz.'
+    return True, None, 'Ödeme başarıyla tamamlandı.'
+
+
+def create_dummy_session(reservation):
+    """Return a fake session payload that routes to the dummy payment page."""
+    amount = calculate_amount(reservation) or 0
+    return {
+        "id": f"dummy_{reservation.id}",
+        "url": f"/dummy-payment?reservation_id={reservation.id}&amount={amount:.2f}",
+        "amount": amount,
+        "currency": "try",
+        "mode": "dummy",
+    }, None
 
 
 def is_configured():
@@ -111,6 +144,8 @@ def calculate_amount(reservation):
 
 
 def create_checkout_session(reservation, customer_email, success_url, cancel_url):
+    if is_dummy_mode():
+        return create_dummy_session(reservation)
     if not is_configured():
         return None, "Stripe is not configured"
     amount = calculate_amount(reservation)

@@ -149,3 +149,82 @@ def payment_status(reservation_id):
         "payment_status": getattr(reservation, "payment_status", "unpaid"),
         "paid_at": reservation.paid_at.isoformat() if getattr(reservation, "paid_at", None) else None,
     })
+
+
+@payment_bp.route("/dummy-pay/<int:reservation_id>", methods=["POST"])
+@jwt_required()
+def dummy_pay(reservation_id):
+    """Dummy payment endpoint — card number last digit decides outcome."""
+    from app.services.payment_service import dummy_card_result, is_dummy_mode, calculate_amount
+    
+    if not is_dummy_mode():
+        return jsonify({"error": "Dummy mode is not enabled"}), 400
+
+    user_id = get_jwt_identity()
+    try: user_id = int(user_id)
+    except (TypeError, ValueError): pass
+
+    reservation = Reservation.query.get(reservation_id)
+    if not reservation:
+        return jsonify({"error": "Reservation not found"}), 404
+    if reservation.user_id != user_id:
+        return jsonify({"error": "Not authorized"}), 403
+    if reservation.status != "approved":
+        return jsonify({"error": "Reservation must be approved before payment"}), 400
+    if getattr(reservation, "payment_status", "unpaid") == "paid":
+        return jsonify({"error": "Already paid"}), 400
+
+    data = request.get_json(silent=True) or {}
+    card_number = data.get("card_number", "")
+
+    success, error_code, message = dummy_card_result(card_number)
+
+    if success:
+        reservation.payment_status = "paid"
+        reservation.paid_at = datetime.utcnow()
+        reservation.stripe_session_id = f"dummy_{reservation_id}"
+        db.session.commit()
+        amount = calculate_amount(reservation) or 0
+        return jsonify({
+            "status": "paid",
+            "message": message,
+            "amount": amount,
+            "paid_at": reservation.paid_at.isoformat(),
+        })
+    else:
+        return jsonify({
+            "status": "failed",
+            "error_code": error_code,
+            "message": message,
+        }), 402
+
+
+@payment_bp.route("/dummy-refund/<int:reservation_id>", methods=["POST"])
+@jwt_required()
+def dummy_refund(reservation_id):
+    """Dummy refund — instantly marks refunded, no real money."""
+    from app.services.payment_service import is_dummy_mode, calculate_amount
+
+    if not is_dummy_mode():
+        return jsonify({"error": "Dummy mode not enabled"}), 400
+
+    user_id = get_jwt_identity()
+    try: user_id = int(user_id)
+    except (TypeError, ValueError): pass
+
+    reservation = Reservation.query.get(reservation_id)
+    if not reservation:
+        return jsonify({"error": "Reservation not found"}), 404
+
+    data = request.get_json(silent=True) or {}
+    refund_amount = data.get("amount", 0)
+
+    reservation.payment_status = "refunded"
+    db.session.commit()
+
+    return jsonify({
+        "status": "refunded",
+        "refund_amount": refund_amount,
+        "message": f"{refund_amount:.2f} TL iade edildi.",
+    })
+
