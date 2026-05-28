@@ -63,6 +63,6 @@ def health():
     """Quick check that copilot service is configured."""
     import os
     return jsonify({
-        "configured": bool(os.getenv("GEMINI_API_KEY")),
-        "model": copilot_service.GEMINI_MODEL
+        "configured": bool(os.getenv("GROQ_API_KEY")),
+        "model": copilot_service.GROQ_MODEL
     })

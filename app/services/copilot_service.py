@@ -23,10 +23,6 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL = "llama-3.3-70b-versatile"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-# Aliases so the existing /health endpoint keeps working
-GEMINI_API_KEY = GROQ_API_KEY
-GEMINI_MODEL = GROQ_MODEL
-
 
 def _groq_post(payload, timeout=30):
     """POST to Groq API using urllib (OpenAI-compatible chat completions)."""
@@ -80,19 +76,6 @@ CUSTOMER_TOOLS = [
                     "enum": ["konaklama", "yeme-icme", "guzellik", "saglik", "spor", "etkinlik", "hizmet", "egitim"]
                 }
             }
-        }
-    }},
-    {"type": "function", "function": {
-        "name": "prepare_booking",
-        "description": "Prepare a hotel room reservation by directing the user to the booking page with pre-filled details. Use this when the user wants to book/reserve a specific room. Returns a navigation action - the UI will open the booking page automatically. DO NOT claim you completed the reservation - only the user can finalize it on the booking page.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "service_id": {"type": "string", "description": "The numeric ID of the hotel room (e.g. \"5\", \"23\"). Get this from check_room_availability tool first."},
-                "check_in_date": {"type": "string", "description": "Check-in date in YYYY-MM-DD format (optional)"},
-                "check_out_date": {"type": "string", "description": "Check-out date in YYYY-MM-DD format (optional)"}
-            },
-            "required": ["service_id"]
         }
     }},
     {"type": "function", "function": {
@@ -399,34 +382,8 @@ def tool_get_top_services(business_id, limit=5):
 
 
 
-def tool_prepare_booking(service_id, check_in_date=None, check_out_date=None):
-    """Prepare booking by returning navigation action. Does NOT create reservation."""
-    from app.models.service import Service
-    svc = Service.query.get(service_id)
-    if not svc:
-        return {"error": f"Service {service_id} not found"}
-    if svc.category != 'hotel':
-        return {"error": "Only hotel rooms can be booked via this tool"}
-    
-    # Build URL with optional date params
-    url = f"#service-detail?id={service_id}"
-    if check_in_date and check_out_date:
-        url += f"&start={check_in_date}&end={check_out_date}"
-    
-    return {
-        "action": "navigate",
-        "url": url,
-        "service_id": service_id,
-        "service_name": svc.name,
-        "room_type": svc.room_type,
-        "price": float(svc.price) if svc.price else None,
-        "message": f"Opening booking page for {svc.name}. Please review and confirm your reservation."
-    }
-
-
 TOOL_HANDLERS = {
     "search_businesses": lambda args, ctx: tool_search_businesses(**args),
-    "prepare_booking": lambda args, ctx: tool_prepare_booking(**args),
     "get_business_details": lambda args, ctx: tool_get_business_details(**args),
     "check_room_availability": lambda args, ctx: tool_check_room_availability(**args),
     "get_my_reservations": lambda args, ctx: tool_get_my_reservations(ctx.get("user_id")),
@@ -455,6 +412,8 @@ Bugünün tarihi: {today}.
 2. Eğer kullanıcı sadece teşekkür ediyorsa ("teşekkürler", "sağol", "ok" gibi), kibar bir şekilde "Rica ederim, başka sorunuz olursa burada olacağım." de. Tool çağırma.
 3. Eğer kullanıcı net bir soru sorduysa (otel ara, rezervasyonum nerede, vs.), o ZAMAN tool kullan ve veritabanından gerçek veri çek.
 4. Geçmiş sohbetin ne olduğuna bakma — her mesaja bağımsız olarak cevap ver. Önceki mesajda otel arandı diye yeni bir mesajda otomatik otel listeleme.
+5. ÇOK ÖNEMLİ: Rezervasyon ONAYLAYAMAZSIN, REDDEDEMEZSİN, İPTAL EDEMEZSİN. Bunun için aracın yok. Kullanıcı isterse ASLA "yaptım/reddettim/onayladım/iptal ettim" deme. Şöyle de: "Bu işlemleri Rezervasyonlar panelinizden yapabilirsiniz. Ben size bekleyen rezervasyonları listeleyebilirim." Sadece veri gösterirsin, değiştiremezsin.
+6. Rezervasyon OLUŞTURAMAZSIN. Kullanıcı "rezerve et", "kitle", "booking yap" derse ASLA "yaptım", "rezervasyon sayfası açılıyor" deme. Şöyle de: "Rezervasyon yapmak için ilgili otelin sayfasından oda seçip rezervasyon formunu doldurabilirsiniz. Size uygun otelleri listeleyebilirim." Sadece otel/oda bilgisi verir ve arama yaparsın.
 
 Yanıtlarını Türkçe ver. Cevapları kısa tut (1-3 cümle). Tarih belirtilmeden "yarın", "hafta sonu" gibi görece tarihler kullanılırsa, bugünden hesapla ve YYYY-MM-DD formatına çevir."""
     else:
@@ -468,6 +427,8 @@ CRITICAL RULES:
 2. If the user just thanks you ("thanks", "thank you", "ok"), respond politely like "You're welcome! Let me know if you need anything else." Do NOT call tools.
 3. ONLY call tools when the user asks a clear, specific question (search for hotels, my reservations, etc.).
 4. Treat each message independently — don't continue a previous conversation pattern. Just because the user previously asked about hotels doesn't mean their next message is also about hotels.
+5. VERY IMPORTANT: You CANNOT approve, reject, or cancel reservations. You have no tool for this. If asked, NEVER say "done/rejected/approved/cancelled". Instead say: "You can do this from your Reservations panel. I can list your pending reservations." You only show data, you cannot modify it.
+6. You CANNOT create reservations either. If the user says "book", "reserve", NEVER say "done" or "opening booking page". Instead say: "To make a reservation, please select a room on the hotel's page and fill out the booking form. I can list suitable hotels for you." You only provide info and search.
 
 Answer in English. Keep responses brief (1-3 sentences). For relative dates like "tomorrow" or "this weekend", convert to YYYY-MM-DD based on today's date."""
 
@@ -496,6 +457,7 @@ Answer in English. Keep responses brief (1-3 sentences). For relative dates like
 # ──────────────────────────────────────────────────────────────────────────
 # MAIN CHAT FUNCTION
 # ──────────────────────────────────────────────────────────────────────────
+
 
 def chat(message, history, user, lang="tr"):
     if not GROQ_API_KEY:
@@ -632,41 +594,7 @@ def chat(message, history, user, lang="tr"):
         if pending_action["action"]:
             response["action"] = pending_action["action"]
             response["url"] = pending_action["url"]
-        
-        # FALLBACK: If user wanted to book but AI didn't call prepare_booking,
-        # force a redirect based on the most recent hotel found in tool results.
-        if not response.get("action"):
-            BOOK_KEYWORDS = ['book', 'reserve', 'reservation', 'booking',
-                             'rezerve', 'rezervasyon', 'kitla', 'ayirt']
-            msg_lower = (message or "").lower()
-            if any(kw in msg_lower for kw in BOOK_KEYWORDS):
-                # Find most recent hotel business in tool_history
-                forced_id = None
-                forced_name = None
-                for entry in reversed(tool_history):
-                    res = entry.get("result", {})
-                    # search_businesses returns {"businesses": [...]}
-                    businesses = res.get("businesses") if isinstance(res, dict) else None
-                    if businesses:
-                        for biz in businesses:
-                            if isinstance(biz, dict) and biz.get("category") == "hotel":
-                                forced_id = biz.get("id")
-                                forced_name = biz.get("name")
-                                break
-                        if forced_id:
-                            break
-                    # get_business_details returns single business object
-                    if isinstance(res, dict) and res.get("id") and res.get("category") == "hotel":
-                        forced_id = res.get("id")
-                        forced_name = res.get("name")
-                        break
-                
-                if forced_id:
-                    response["action"] = "navigate"
-                    response["url"] = f"#business-detail?id={forced_id}"
-                    response["reply"] = f"Opening the booking page for {forced_name}. Please select a room and confirm your reservation."
-                    logger.info("FORCED REDIRECT: business_id=%s, name=%s", forced_id, forced_name)
-        
+
         return response
 
     return {"error": "Too many tool iterations", "reply": None}
