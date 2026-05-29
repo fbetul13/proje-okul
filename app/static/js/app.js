@@ -5365,6 +5365,9 @@ window.renderDummyPaymentPage = function(reservationId, amount) {
                     style="width:100%; padding:0.7rem; margin-top:0.7rem; background:none; border:none; color:#999; font-size:0.85rem; cursor:pointer;">
                     ← ${L.back}
                 </button>
+                <div style="text-align:center; margin-top:1rem; padding:0.7rem; font-size:0.72rem; color:#999; font-style:italic;">
+                    💡 ${isTR ? 'Demo ödeme — gerçek para çekilmez' : 'Demo payment — no real charge'}
+                </div>
             </div>
         </div>
     `;

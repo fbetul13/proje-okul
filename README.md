@@ -8,20 +8,20 @@ BetulBooking is a hybrid reservation system that supports both **hotel bookings*
 
 ---
 
-## ✨ Features
+##  Features
 
-### 🤖 AI Copilot
+###  AI Copilot
 - Powered by **Groq Llama 3.3 70B** with native tool calling
 - 8 distinct tools: business search, availability check, my reservations, business reviews, statistics, and more
 - Bilingual conversation (Turkish & English)
 - Retry mechanism for tool-call edge cases
 
 ### 💳 Payments & Refunds
-- Real **Stripe Checkout** integration (test mode, Turkish Lira)
-- Automatic **partial/full refunds** when reservations are cancelled
-- Payment status tracking on each reservation
+- **Dual-mode payment**: `dummy` (academic demo, simulates outcomes by card last digit) or `stripe` (real Stripe Checkout, production-ready) — see Payment Architecture below
+- Automatic **partial/full refunds** when reservations are cancelled (real refund in Stripe mode, marked `refunded` in dummy mode)
+- Payment status tracking on each reservation (`unpaid` / `paid` / `refunded` / `failed`)
 
-### 📅 Reservations
+###  Reservations
 - **Hotel bookings**: date-range with overlap prevention
 - **Appointment bookings**: time-slot based
 - **Tiered cancellation policy**: 3+ days free / 1-2 days 20% fee / same-day 50% fee
@@ -29,14 +29,14 @@ BetulBooking is a hybrid reservation system that supports both **hotel bookings*
 - **Optional breakfast** (+15%) — Booking.com-style add-on
 - **Price locking**: total computed at booking, persisted on the row
 
-### 🌐 User Experience
+###  User Experience
 - Full **Turkish/English internationalization** (600+ translation keys)
 - **Dark mode** with system-preference detection
 - **Bilingual HTML email notifications** when reservations change status
 - Tier-based **room amenities** display (Standard 5 → Presidential 17 items)
 - Mobile-responsive booking modals
 
-### 🛡️ User Roles
+###  User Roles
 - **Customer**: browse, reserve, pay, cancel, review
 - **Business Owner**: manage services, approve/reject reservations, view stats
 - **Staff**: assist business owners with day-to-day operations
@@ -44,7 +44,7 @@ BetulBooking is a hybrid reservation system that supports both **hotel bookings*
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -58,7 +58,7 @@ BetulBooking is a hybrid reservation system that supports both **hotel bookings*
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Docker Desktop
@@ -78,7 +78,7 @@ The first startup runs seed data, so a demo dataset (businesses, users, services
 
 ---
 
-## 🔑 Demo Credentials
+##  Demo Credentials
 
 See `GIRIS_BILGILERI.md` for the full list. Quick test:
 
@@ -90,7 +90,7 @@ For Stripe payment testing, use card `4242 4242 4242 4242` with any future expir
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 okulproje/
@@ -111,10 +111,10 @@ okulproje/
 
 ---
 
-## 🎯 Architectural Highlights
+##  Architectural Highlights
 
 ### Price Locking
-When a reservation is created, the total price is computed (base × nights + extra-guest fee + breakfast multiplier) and stored on the row. The Stripe Checkout session reads this stored value rather than recomputing live, so a customer who booked at 1000 TL/night always pays 1000 TL/night even if the room rate later changes.
+When a reservation is created, the total price is computed (base × nights + extra-guest fee + breakfast multiplier) and stored on the row. The payment session (Stripe or dummy) reads this stored value rather than recomputing live, so a customer who booked at 1000 TL/night always pays 1000 TL/night even if the room rate later changes.
 
 ### Tiered Cancellation
 Cancellation penalty is determined by how many days remain until check-in:
@@ -122,7 +122,15 @@ Cancellation penalty is determined by how many days remain until check-in:
 - **1-2 days** → 20% penalty, 80% refund
 - **Same day** → 50% penalty, 50% refund
 
-When a paid reservation is cancelled, the system automatically issues a Stripe refund for the appropriate partial amount.
+When a paid reservation is cancelled, the system marks it as `refunded` (in dummy mode) or issues a partial Stripe refund (in Stripe mode) for the appropriate amount.
+
+### Payment Architecture
+The system supports two payment modes via the `PAYMENT_MODE` environment variable:
+
+- **`dummy`** (used for the academic demo) — simulates payment outcomes based on the card number's last digit (1=success, 2=declined, 3=insufficient funds, 4=invalid card). No real money moves, but the full payment lifecycle (paid → refunded → failed) is still tracked correctly in the database, which lets the rest of the system (BO panel badges, cancellation refunds, etc.) be exercised end-to-end.
+- **`stripe`** (production-ready) — real Stripe Checkout integration with refund support. Activating it requires a Stripe account, a registered business, and PCI-DSS compliance, which are outside the scope of an academic project.
+
+The Stripe path is fully implemented in `app/services/payment_service.py` (~230 lines: checkout sessions, session retrieval, partial refunds) and is switched on by setting `PAYMENT_MODE=stripe` in `.env`.
 
 ### AI Copilot Tool Calling
 The copilot is implemented as a thin layer over `groq` SDK with structured tool definitions. Eight tools route into the same service-layer functions used by the rest of the application, so AI-driven actions and human-driven actions stay consistent. A retry mechanism handles cases where Llama occasionally emits a function call as text instead of using the structured format.
@@ -132,7 +140,7 @@ When a reservation status changes (approved/rejected/etc.), the email service re
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 docker exec okulproje-web-1 pytest tests/ -v
@@ -142,7 +150,7 @@ Tests cover reservation creation, capacity logic, cancellation penalties, and pa
 
 ---
 
-## 🎓 Academic Context
+##  Academic Context
 
 This project was developed as the graduation project for the Department of Software Engineering at İstanbul Okan University, under the supervision of **Asst. Prof. Dr. Emel Koç**.
 
@@ -152,6 +160,6 @@ This project was developed as the graduation project for the Department of Softw
 
 ---
 
-## 📜 License
+##  License
 
 This project is licensed for academic purposes. For other use cases please contact the author.
