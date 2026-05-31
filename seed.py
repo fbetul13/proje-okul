@@ -280,36 +280,42 @@ def _seed_populate():
         "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=600"
     ]
     room_types = [
-        ("Standard Room", "City view, double bed, minibar and LCD TV.", 850),
-        ("Deluxe Room", "Spacious balcony, king-size bed, jacuzzi and seating area.", 1400),
-        ("Family Room", "2 separate bedrooms, kids' corner and kitchen.", 1800),
-        ("Suite Room", "Panoramic view, private lounge and butler service.", 2800),
-        ("Presidential Suite", "Top floor, private terrace, jacuzzi and VIP services.", 4500)
+        ("Standard Room", "City view, double bed, minibar and LCD TV.", 3500),
+        ("Deluxe Room", "Spacious balcony, king-size bed, jacuzzi and seating area.", 5500),
+        ("Family Room", "2 separate bedrooms, kids' corner and kitchen.", 6500),
+        ("Suite Room", "Panoramic view, private lounge and butler service.", 9000),
+        ("Presidential Suite", "Top floor, private terrace, jacuzzi and VIP services.", 18000)
     ]
     
+    # Each room type has 3 variants with different positions/features
+    room_variants = [
+        ("",            "",                                              0,    "standard"),
+        (" - High Floor", " Located on a higher floor with a wider view.", 400,  "high"),
+        (" - Corner",     " Corner room with double-sided windows.",       700,  "corner"),
+    ]
     for hotel in hotels:
         for i, (room_name, room_desc, base_price) in enumerate(room_types):
-            for room_num in range(1, 4):  # 3 rooms of each type
+            for room_num, (suffix, extra_desc, premium, variant_tag) in enumerate(room_variants, 1):
                 s = Service(
                     business_id=hotel.id,
-                    name=f"{room_name}",
-                    description=room_desc,
+                    name=f"{room_name}{suffix}",
+                    description=room_desc + extra_desc,
                     category="hotel",
                     room_number=f"{(i+1)*100 + room_num}",
                     room_type=room_name.split()[0],
-                    price=base_price + random.randint(-100, 200),
+                    price=base_price + premium + random.randint(-50, 100),
                     image_url=room_images[i]
                 )
                 db.session.add(s)
 
     # Hair Salon Services (first beauty business)
     kuafor_services = [
-        ("Women's Haircut", "Professional haircut and styling.", 45, 200, "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"),
-        ("Men's Haircut", "Modern men's haircut and beard trim.", 30, 120, "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600"),
-        ("Hair Coloring", "Professional hair coloring, ombre and balayage.", 90, 450, "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=600"),
-        ("Keratin Treatment", "Hair straightening and keratin therapy.", 120, 800, "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=600"),
-        ("Bridal Hair", "Special-occasion hair design and makeup.", 180, 1500, "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=600"),
-        ("Blow-Dry & Curling", "Daily blow-dry or curling iron application.", 30, 150, "https://images.unsplash.com/photo-1522337094846-8a818192de1f?auto=format&fit=crop&q=80&w=600"),
+        ("Women's Haircut", "Professional haircut and styling.", 45, 750, "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=600"),
+        ("Men's Haircut", "Modern men's haircut and beard trim.", 30, 400, "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600"),
+        ("Hair Coloring", "Professional hair coloring, ombre and balayage.", 90, 2500, "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=600"),
+        ("Keratin Treatment", "Hair straightening and keratin therapy.", 120, 4500, "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=600"),
+        ("Bridal Hair", "Special-occasion hair design and makeup.", 180, 5000, "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=600"),
+        ("Blow-Dry & Curling", "Daily blow-dry or curling iron application.", 30, 500, "https://images.unsplash.com/photo-1522337094846-8a818192de1f?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in kuafor_services:
         s = Service(business_id=guzellik_businesses[0].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -318,10 +324,10 @@ def _seed_populate():
 
     # Beauty Studio Services (second beauty business)
     beauty_services = [
-        ("Skin Care", "Deep cleansing, peeling and moisturizing.", 60, 350, "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80&w=600"),
-        ("HydraFacial", "Medical skin renewal and hydration.", 45, 600, "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80&w=600"),
-        ("Permanent Makeup", "Brow contouring, lip and eyeliner.", 90, 1200, "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&q=80&w=600"),
-        ("Professional Makeup", "Special-occasion and bridal makeup.", 60, 500, "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600"),
+        ("Skin Care", "Deep cleansing, peeling and moisturizing.", 60, 1200, "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&q=80&w=600"),
+        ("HydraFacial", "Medical skin renewal and hydration.", 45, 2500, "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80&w=600"),
+        ("Permanent Makeup", "Brow contouring, lip and eyeliner.", 90, 4500, "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&q=80&w=600"),
+        ("Professional Makeup", "Special-occasion and bridal makeup.", 60, 2000, "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in beauty_services:
         s = Service(business_id=guzellik_businesses[1].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -330,9 +336,9 @@ def _seed_populate():
 
     # Nail Art Services (third beauty business)
     nail_services = [
-        ("Manicure", "Classic hand care and nail polish application.", 30, 120, "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600"),
-        ("Gel Nails", "Permanent gel application and nail art.", 60, 250, "https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600"),
-        ("Acrylic Nails", "Acrylic and artificial nail extensions.", 90, 400, "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600"),
+        ("Manicure", "Classic hand care and nail polish application.", 30, 400, "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600"),
+        ("Gel Nails", "Permanent gel application and nail art.", 60, 800, "https://images.unsplash.com/photo-1607779097040-26e80aa78e66?auto=format&fit=crop&q=80&w=600"),
+        ("Acrylic Nails", "Acrylic and artificial nail extensions.", 90, 1200, "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in nail_services:
         s = Service(business_id=guzellik_businesses[2].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -341,11 +347,11 @@ def _seed_populate():
 
     # Spa & Wellness Services
     spa_services = [
-        ("Swedish Massage", "Relaxing full-body massage.", 60, 450, "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=600"),
-        ("Hot Stone Therapy", "Deep-tissue massage with hot stones.", 75, 550, "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&q=80&w=600"),
-        ("Aromatherapy", "Therapy with essential oils.", 60, 400, "https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&q=80&w=600"),
-        ("Turkish Bath", "Traditional bath and foam massage.", 90, 350, "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=600"),
-        ("Balinese Massage", "Far-East-inspired massage.", 90, 600, "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&q=80&w=600"),
+        ("Swedish Massage", "Relaxing full-body massage.", 60, 1500, "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&q=80&w=600"),
+        ("Hot Stone Therapy", "Deep-tissue massage with hot stones.", 75, 2000, "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&q=80&w=600"),
+        ("Aromatherapy", "Therapy with essential oils.", 60, 1500, "https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&q=80&w=600"),
+        ("Turkish Bath", "Traditional bath and foam massage.", 90, 1200, "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=600"),
+        ("Balinese Massage", "Far-East-inspired massage.", 90, 2200, "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in spa_services:
         s = Service(business_id=saglik_businesses[0].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -354,9 +360,9 @@ def _seed_populate():
 
     # Physical Therapy Services
     fizik_services = [
-        ("Manual Therapy", "Hands-on joint and muscle treatment.", 45, 400, "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600"),
-        ("Electrotherapy", "Pain-relief electrical therapy.", 30, 250, "https://images.unsplash.com/photo-1580281657527-47f249e8f00f?auto=format&fit=crop&q=80&w=600"),
-        ("Rehabilitation", "Post-surgery recovery program.", 60, 500, "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=600"),
+        ("Manual Therapy", "Hands-on joint and muscle treatment.", 45, 1500, "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600"),
+        ("Electrotherapy", "Pain-relief electrical therapy.", 30, 800, "https://images.unsplash.com/photo-1580281657527-47f249e8f00f?auto=format&fit=crop&q=80&w=600"),
+        ("Rehabilitation", "Post-surgery recovery program.", 60, 2000, "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in fizik_services:
         s = Service(business_id=saglik_businesses[1].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -368,7 +374,7 @@ def _seed_populate():
         restoran_services = [
             ("Table for 2", "Ideal for a romantic dinner.", 120, 0, "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=600"),
             ("Table for 4", "For family and friend groups.", 120, 0, "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=600"),
-            ("VIP Room", "For private meetings and celebrations.", 180, 500, "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&q=80&w=600"),
+            ("VIP Room", "For private meetings and celebrations.", 180, 2500, "https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&q=80&w=600"),
         ]
         for name, desc, dur, price, img in restoran_services:
             s = Service(business_id=rest.id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -377,10 +383,10 @@ def _seed_populate():
 
     # Gym Services
     fitness_services = [
-        ("Personal Training", "One-on-one fitness coaching.", 60, 350, "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=600"),
-        ("Pilates", "Group pilates class.", 50, 150, "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80&w=600"),
-        ("Yoga", "Morning yoga session.", 60, 120, "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600"),
-        ("CrossFit", "High-intensity workout.", 45, 180, "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600"),
+        ("Personal Training", "One-on-one fitness coaching.", 60, 1200, "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=600"),
+        ("Pilates", "Group pilates class.", 50, 500, "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&q=80&w=600"),
+        ("Yoga", "Morning yoga session.", 60, 400, "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=600"),
+        ("CrossFit", "High-intensity workout.", 45, 600, "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in fitness_services:
         s = Service(business_id=spor_businesses[0].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -389,9 +395,9 @@ def _seed_populate():
 
     # Swimming Academy Services
     yuzme_services = [
-        ("Adult Swimming Course", "Beginner-level swimming lessons.", 45, 200, "https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?auto=format&fit=crop&q=80&w=600"),
-        ("Kids Swimming Course", "Swimming lessons for ages 4-12.", 45, 180, "https://images.unsplash.com/photo-1519315901367-f34ff9154487?auto=format&fit=crop&q=80&w=600"),
-        ("Baby Swimming", "Parent-accompanied swimming for ages 0-3.", 30, 250, "https://images.unsplash.com/photo-1438029071396-1e831a7fa6d8?auto=format&fit=crop&q=80&w=600"),
+        ("Adult Swimming Course", "Beginner-level swimming lessons.", 45, 800, "https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?auto=format&fit=crop&q=80&w=600"),
+        ("Kids Swimming Course", "Swimming lessons for ages 4-12.", 45, 700, "https://images.unsplash.com/photo-1519315901367-f34ff9154487?auto=format&fit=crop&q=80&w=600"),
+        ("Baby Swimming", "Parent-accompanied swimming for ages 0-3.", 30, 900, "https://images.unsplash.com/photo-1438029071396-1e831a7fa6d8?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in yuzme_services:
         s = Service(business_id=spor_businesses[1].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -400,9 +406,9 @@ def _seed_populate():
 
     # Education Services - Tutoring
     ozel_ders_services = [
-        ("Math Private Lesson", "One-on-one math tutoring.", 60, 300, "https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?auto=format&fit=crop&q=80&w=600"),
-        ("Physics Private Lesson", "One-on-one physics tutoring.", 60, 300, "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=600"),
-        ("University Exam Prep", "University entrance exam preparation program.", 90, 400, "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=600"),
+        ("Math Private Lesson", "One-on-one math tutoring.", 60, 1000, "https://images.unsplash.com/photo-1509228627152-72ae9ae6848d?auto=format&fit=crop&q=80&w=600"),
+        ("Physics Private Lesson", "One-on-one physics tutoring.", 60, 1000, "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=600"),
+        ("University Exam Prep", "University entrance exam preparation program.", 90, 1500, "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in ozel_ders_services:
         s = Service(business_id=egitim_businesses[0].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
@@ -411,9 +417,9 @@ def _seed_populate():
 
     # Language School Services
     dil_services = [
-        ("English Course", "A1-C2 level English lessons.", 60, 250, "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=600"),
-        ("IELTS Preparation", "IELTS exam preparation program.", 90, 400, "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=600"),
-        ("Business English", "Business English training.", 60, 350, "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=600"),
+        ("English Course", "A1-C2 level English lessons.", 60, 800, "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=600"),
+        ("IELTS Preparation", "IELTS exam preparation program.", 90, 1500, "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=600"),
+        ("Business English", "Business English training.", 60, 1200, "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=600"),
     ]
     for name, desc, dur, price, img in dil_services:
         s = Service(business_id=egitim_businesses[1].id, name=name, description=desc, duration=dur, category="appointment", price=price, image_url=img)
